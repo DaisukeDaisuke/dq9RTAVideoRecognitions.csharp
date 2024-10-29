@@ -67,31 +67,31 @@
             // 
             this.pictureBox2.Location = new System.Drawing.Point(12, 299);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(139, 94);
+            this.pictureBox2.Size = new System.Drawing.Size(139, 45);
             this.pictureBox2.TabIndex = 1;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.Click += new System.EventHandler(this.pictureBox2_Click);
             // 
             // pictureBox3
             // 
-            this.pictureBox3.Location = new System.Drawing.Point(157, 299);
+            this.pictureBox3.Location = new System.Drawing.Point(12, 353);
             this.pictureBox3.Name = "pictureBox3";
-            this.pictureBox3.Size = new System.Drawing.Size(139, 94);
+            this.pictureBox3.Size = new System.Drawing.Size(139, 45);
             this.pictureBox3.TabIndex = 2;
             this.pictureBox3.TabStop = false;
             // 
             // pictureBox4
             // 
-            this.pictureBox4.Location = new System.Drawing.Point(302, 299);
+            this.pictureBox4.Location = new System.Drawing.Point(157, 299);
             this.pictureBox4.Name = "pictureBox4";
-            this.pictureBox4.Size = new System.Drawing.Size(139, 94);
+            this.pictureBox4.Size = new System.Drawing.Size(197, 105);
             this.pictureBox4.TabIndex = 3;
             this.pictureBox4.TabStop = false;
             this.pictureBox4.Click += new System.EventHandler(this.pictureBox4_Click);
             // 
             // pictureBox5
             // 
-            this.pictureBox5.Location = new System.Drawing.Point(447, 299);
+            this.pictureBox5.Location = new System.Drawing.Point(360, 299);
             this.pictureBox5.Name = "pictureBox5";
             this.pictureBox5.Size = new System.Drawing.Size(26, 40);
             this.pictureBox5.TabIndex = 4;
@@ -99,7 +99,7 @@
             // 
             // pictureBox6
             // 
-            this.pictureBox6.Location = new System.Drawing.Point(479, 299);
+            this.pictureBox6.Location = new System.Drawing.Point(392, 299);
             this.pictureBox6.Name = "pictureBox6";
             this.pictureBox6.Size = new System.Drawing.Size(26, 40);
             this.pictureBox6.TabIndex = 5;
@@ -107,7 +107,7 @@
             // 
             // pictureBox7
             // 
-            this.pictureBox7.Location = new System.Drawing.Point(511, 299);
+            this.pictureBox7.Location = new System.Drawing.Point(424, 299);
             this.pictureBox7.Name = "pictureBox7";
             this.pictureBox7.Size = new System.Drawing.Size(26, 40);
             this.pictureBox7.TabIndex = 6;
@@ -115,7 +115,7 @@
             // 
             // pictureBox8
             // 
-            this.pictureBox8.Location = new System.Drawing.Point(449, 345);
+            this.pictureBox8.Location = new System.Drawing.Point(360, 345);
             this.pictureBox8.Name = "pictureBox8";
             this.pictureBox8.Size = new System.Drawing.Size(26, 40);
             this.pictureBox8.TabIndex = 7;
@@ -123,7 +123,7 @@
             // 
             // pictureBox9
             // 
-            this.pictureBox9.Location = new System.Drawing.Point(481, 345);
+            this.pictureBox9.Location = new System.Drawing.Point(392, 345);
             this.pictureBox9.Name = "pictureBox9";
             this.pictureBox9.Size = new System.Drawing.Size(26, 40);
             this.pictureBox9.TabIndex = 8;
@@ -131,7 +131,7 @@
             // 
             // pictureBox10
             // 
-            this.pictureBox10.Location = new System.Drawing.Point(513, 345);
+            this.pictureBox10.Location = new System.Drawing.Point(424, 345);
             this.pictureBox10.Name = "pictureBox10";
             this.pictureBox10.Size = new System.Drawing.Size(26, 40);
             this.pictureBox10.TabIndex = 9;
@@ -148,31 +148,31 @@
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.RowTemplate.Height = 21;
-            this.dataGridView1.Size = new System.Drawing.Size(542, 272);
+            this.dataGridView1.Size = new System.Drawing.Size(644, 272);
             this.dataGridView1.TabIndex = 10;
             this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
             // 
             // textBox1
             // 
             this.textBox1.BackColor = System.Drawing.SystemColors.Control;
-            this.textBox1.Location = new System.Drawing.Point(543, 299);
+            this.textBox1.Location = new System.Drawing.Point(456, 299);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(98, 19);
+            this.textBox1.Size = new System.Drawing.Size(141, 19);
             this.textBox1.TabIndex = 11;
             // 
             // textBox2
             // 
             this.textBox2.BackColor = System.Drawing.SystemColors.Control;
-            this.textBox2.Location = new System.Drawing.Point(543, 345);
+            this.textBox2.Location = new System.Drawing.Point(456, 345);
             this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(98, 19);
+            this.textBox2.Size = new System.Drawing.Size(141, 19);
             this.textBox2.TabIndex = 12;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(643, 752);
+            this.ClientSize = new System.Drawing.Size(663, 752);
             this.Controls.Add(this.textBox2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.dataGridView1);
