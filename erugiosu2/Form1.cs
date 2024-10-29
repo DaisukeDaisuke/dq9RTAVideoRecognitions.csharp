@@ -9,6 +9,8 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
 using Emgu.CV.Reg;
+using Emgu.CV.ML;
+using Emgu.CV.ML.MlEnum;
 
 namespace WindowsFormsApp1
 {
@@ -21,8 +23,8 @@ namespace WindowsFormsApp1
         private int frameCounter = 0; // フレームカウンタ
         private Dictionary<string, Mat> templateCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         private Dictionary<string, Mat> NumberCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
-        int[] matchResults1 = new int[3];
-        int[] matchResults2= new int[3];
+        int[] matchResults1 = new int[3] { 0, 0, 0 };
+        int[] matchResults2= new int[3] { 0, 0, 0 };
 
         public Form1()
         {
@@ -42,6 +44,13 @@ namespace WindowsFormsApp1
 
             // テンプレート画像をキャッシュ
             LoadTemplatesToCache();
+
+            for (int i = 0; i < 5; i++)
+            {
+                dataGridView1.Columns.Add($"Column{i + 1}", $"Column {i + 1}");
+            }
+
+            //https://github.com/rlabrecque/RLSolitaireBot/blob/f4ca851d26d348f79823e0750a1792a403cf4a45/SolitaireAI/Solitaire.cs#L120
         }
 
         private void LoadTemplatesToCache()
@@ -54,7 +63,7 @@ namespace WindowsFormsApp1
             {
                 if (!templateCache.ContainsKey(templateFile))
                 {
-                    Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Color);
+                    Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
                     templateCache.Add(templateFile, template);
                 }
             }
@@ -67,11 +76,14 @@ namespace WindowsFormsApp1
             {
                 if (!templateCache.ContainsKey(templateFile))
                 {
-                    Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Color);
+                    Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
                     NumberCache.Add(templateFile, template);
                 }
             }
-            
+
+            textBox1.Font = new Font(textBox1.Font.FontFamily, 24); // サイズを24に設定
+            textBox2.Font = new Font(textBox1.Font.FontFamily, 24); // サイズを24に設定
+
         }
 
         private void CaptureFrame(object sender, EventArgs e)
@@ -112,8 +124,9 @@ namespace WindowsFormsApp1
                     }
                 }
 
+                textBox1.Text = string.Join(", ", matchResults1);
+                textBox2.Text = string.Join(", ", matchResults2);
 
-               
                 frame.Dispose();
             }
         }
@@ -184,7 +197,7 @@ namespace WindowsFormsApp1
             using (Mat Tmp = result.Mat) {
                 using (Mat trimmed = TrimFirstPixel(Tmp, 130, 45))
                 {
-                    if (trimmed.Width <= 130 && trimmed.Height <= 45)
+                    if (trimmed.Width == 130 && trimmed.Height == 45)
                     {
                         if (pictureBox2.Image != null)
                         {
@@ -200,7 +213,7 @@ namespace WindowsFormsApp1
                             using (Mat resultMat = new Mat())
                             {
                                 // テンプレートマッチングを実行
-                                CvInvoke.MatchTemplate(img, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
+                                CvInvoke.MatchTemplate(trimmed, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
 
                                 // 一致率を計算
                                 double minVal = 0, maxVal = 0;
@@ -227,30 +240,6 @@ namespace WindowsFormsApp1
             }
 
 
-            //using (Mat resultMat2 = result.Mat)
-            //{
-            //    using (Mat trimed = TrimFirstPixel(resultMat2, 130, 50))
-            //    {
-            //        if (trimed.Width <= 120 && trimed.Height <= 60)
-            //        {
-            //            // pictureBoxに表示
-            //            if (pictureBox2.Image != null)
-            //            {
-            //                pictureBox2.Image.Dispose();
-            //            }
-            //            pictureBox2.Image = trimed.ToBitmap();
-            //        }
-            //    }
-            //}
-            //return;
-
-            // テンプレートマッチング
-           
-            // 縦方向の半分の範囲を設定して切り取る
-            //Rectangle roi = new Rectangle(0, 0, result.Width, result.Height / 2);
-            //result.ROI = roi;
-
-
             // PictureBoxを配列またはリストで管理
             PictureBox[] pictureBoxes = { pictureBox5, pictureBox6, pictureBox7 };
 
@@ -258,7 +247,7 @@ namespace WindowsFormsApp1
             Rectangle[] areas = {
                 new Rectangle(0, 0, 60, 60),
                 new Rectangle(55, 0, 60, 60),
-                new Rectangle(110, 0, 60, 60),
+                new Rectangle(105, 0, 60, 60),
             };
 
             // 各領域に対してトリミングを行い、異なるPictureBoxに表示
@@ -285,7 +274,7 @@ namespace WindowsFormsApp1
                                 using (Mat resultMat = new Mat())
                                 {
                                     // テンプレートマッチングを実行
-                                    CvInvoke.MatchTemplate(img, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
+                                    CvInvoke.MatchTemplate(trimmed, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
 
                                     // 一致率を計算
                                     double minVal = 0, maxVal = 0;
@@ -296,11 +285,13 @@ namespace WindowsFormsApp1
                                     double matchPercentage = maxVal * 100.0;
 
 
-                                    if (matchPercentage >= 86)
+                                    if (matchPercentage >= 93.5)
                                     {
-                                        matchResults1[i] = int.Parse(Path.GetFileNameWithoutExtension(templateFile));
+                                        string templateFileName = Path.GetFileNameWithoutExtension(templateFile);
+                                        string normalizedTemplate = templateFileName.Split('_')[0]; // "_"以降を除去してベース番号を取得
+                                        matchResults1[i] = int.Parse(normalizedTemplate);
                                         matched = true;
-                                        Console.WriteLine($"Number with {Path.GetFileName(templateFile)}: {matchPercentage}%");
+                                        Console.WriteLine($"Number20 {i} with {Path.GetFileName(templateFile)}: {matchPercentage}%");
                                     }
                                 }
                             }
@@ -316,8 +307,11 @@ namespace WindowsFormsApp1
                                 pictureBox.Image.Dispose();
                             }
                             pictureBox.Image = trimmed.ToBitmap();
-                            //pictureBox.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", System.Drawing.Imaging.ImageFormat.Png);
-                           
+                            if (frameCounter % 10 == 0)
+                            {
+                                pictureBox.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", System.Drawing.Imaging.ImageFormat.Png);
+
+                            }
                         }
                     }
                 }
@@ -334,6 +328,8 @@ namespace WindowsFormsApp1
             bool found = false, found1 = false;
             int cropWidth = 0, cropHeight = 0;
             int foundX = 0, foundY = 0;
+            Mat monoImage = new Mat();
+            CvInvoke.CvtColor(resultMat1, monoImage, Emgu.CV.CvEnum.ColorConversion.Bgr2Gray);
             Image<Bgr, byte> tmp = resultMat1.ToImage<Bgr, byte>();
 
             for (int y = 0; y < resultMat1.Height; y++)
@@ -392,11 +388,11 @@ namespace WindowsFormsApp1
             if (found)
             {
                 firstWhitePixel = new Rectangle(foundX, foundY, cropWidth, cropHeight);
-                return new Mat(resultMat1, firstWhitePixel);
+                return new Mat(monoImage, firstWhitePixel);
             }
             else
             {
-                return resultMat1;
+                return monoImage;
             }
         }
 
@@ -449,7 +445,7 @@ namespace WindowsFormsApp1
                                 using (Mat resultMat = new Mat())
                                 {
                                     // テンプレートマッチングを実行
-                                    CvInvoke.MatchTemplate(img, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
+                                    CvInvoke.MatchTemplate(trimmed, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
 
                                     // 一致率を計算
                                     double minVal = 0, maxVal = 0;
@@ -460,10 +456,12 @@ namespace WindowsFormsApp1
                                     double matchPercentage = maxVal * 100.0;
 
 
-                                    if (matchPercentage >= 80)
+                                    if (matchPercentage >= 93.5)
                                     {
-                                        Console.WriteLine($"Number1 {i} with {Path.GetFileName(templateFile)}: {matchPercentage}%");
-                                        matchResults1[i] = int.Parse(Path.GetFileNameWithoutExtension(templateFile));
+                                        Console.WriteLine($"Number10 {i} with {Path.GetFileName(templateFile)}: {matchPercentage}%");
+                                        string templateFileName = Path.GetFileNameWithoutExtension(templateFile);
+                                        string normalizedTemplate = templateFileName.Split('_')[0]; // "_"以降を除去してベース番号を取得
+                                        matchResults2[i] = int.Parse(normalizedTemplate);
                                         matched = true;
                                     }
                                 }
@@ -471,7 +469,7 @@ namespace WindowsFormsApp1
 
                             if (!matched)
                             {
-                                matchResults1[i] = -1;
+                                matchResults2[i] = -1;
                             }
 
                             if (frameCounter % 2 == 0)
@@ -482,7 +480,7 @@ namespace WindowsFormsApp1
                                     pictureBox.Image.Dispose();
                                 }
                                 pictureBox.Image = trimmed.ToBitmap();
-                                pictureBox.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", System.Drawing.Imaging.ImageFormat.Png);
+                               // pictureBox.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", System.Drawing.Imaging.ImageFormat.Png);
                             }
                         }
                     }
@@ -499,10 +497,6 @@ namespace WindowsFormsApp1
             pictureBox3.Image = result.ToBitmap();
 
             // 5回に1回画像を保存
-            if (frameCounter % 5 == 0)
-            {
-                //pictureBox2.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_1.png", System.Drawing.Imaging.ImageFormat.Png);
-            }
         }
 
 
@@ -523,6 +517,11 @@ namespace WindowsFormsApp1
         }
 
         private void pictureBox4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
         }
