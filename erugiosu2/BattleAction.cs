@@ -65,12 +65,13 @@ namespace erugiosu2
         public const int ELFIN_ELIXIR = 48;
         public const int MAGIC_WATER = 49;
         public const int SPECIAL_MEDICINE = 50;
+        public const int DEAD = 51;
 
         private static readonly Dictionary<int, string> actionNames = new()
     {
         { BUFF, "スカラ" },
         { ATTACK_ENEMY, "攻撃" },
-        { PARALYSIS, "麻痺" },
+        { PARALYSIS, "麻痺で動けない" },
         { CURE_PARALYSIS, "麻痺回復" },
         { ULTRA_HIGH_SPEED_COMBO, "超高速連打" },
         { SKY_ATTACK, "上空から攻撃" },
@@ -103,7 +104,8 @@ namespace erugiosu2
         { TURN_SKIPPED, "**ターンスキップ**" },
         { SAGE_ELIXIR, "賢者聖水" },
         { ELFIN_ELIXIR, "エルフののみぐすり" },
-        { MAGIC_WATER, "まほうのせいすい" }
+        { MAGIC_WATER, "まほうのせいすい" },
+        { DEAD, "しんでしまった！" }
     };
 
         public static string GetActionName(int actionId) =>

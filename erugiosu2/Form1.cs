@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using System.Diagnostics;
 using erugiosu2;
+using System.Drawing.Imaging;
 
 namespace WindowsFormsApp1
 {
@@ -29,6 +30,7 @@ namespace WindowsFormsApp1
         private Dictionary<string, Mat> templateCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         private Dictionary<string, Mat> NumberCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         private Dictionary<string, Mat> templateCache1 = new Dictionary<string, Mat>(); // テンプレートキャッシュ
+        private Dictionary<string, Mat> templateCache2 = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         int[] matchResults1 = new int[3] { -1, -1, -1 };
         int[] matchResults2= new int[3] { -1, -1, -1 };
 
@@ -413,16 +415,37 @@ namespace WindowsFormsApp1
             }
 
 
-            if (lastHit1 == "mp.png" && lastHit2 == "inori.png")
+            if (lastHit1 == "mp2.png")
             {
                 action = BattleAction.RESTORE_MP;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
             }
 
-            if(lastHit1 == "WakeUp.png"&&lastHit2 != "inori.png")
+            if(lastHit1 == "WakeUp.png"&&lastHit2 != "inori.png"&&ActionIndex != 0)
             {
                 action = BattleAction.TURN_SKIPPED;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+            }
+
+            if (lastHit1 == "Paralysis.png") 
+            {
+                action = BattleAction.PARALYSIS;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+            }
+
+            if(lastHit1 == "sleeping2.png"&&lastHit2 == "" && lastHit3 == "")
+            {
+                action = BattleAction.SLEEPING;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+            }
+
+            if (lastHit1 == "sleeping2.png" && ( lastHit3 == "dead.png" || lastHit3 == "dead2.png"))
+            {
+                action = BattleAction.DEAD;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
             }
@@ -526,10 +549,10 @@ namespace WindowsFormsApp1
         private void AdjustColumnWidths()
         {
             int scrollBarWidth = SystemInformation.VerticalScrollBarWidth;
-            int totalWidth = dataGridView1.Width - scrollBarWidth - 20;
-            if (this.ClientSize.Width < 300)
+            int totalWidth = dataGridView1.Width - scrollBarWidth - 25;
+            if (this.ClientSize.Width < 400)
             {
-                totalWidth -= 10;
+                totalWidth -= 5;
             }
 
             // デフォルトカラム幅
@@ -595,7 +618,7 @@ namespace WindowsFormsApp1
 
             // タイマー設定（5fps）
             _timer = new Timer();
-            _timer.Interval = 200;
+            _timer.Interval = 300;
             _timer.Tick += new EventHandler(CaptureFrame);
             _timer.Start();
 
@@ -660,7 +683,7 @@ namespace WindowsFormsApp1
 
             foreach (string templateFile in templateFiles1)
             {
-                if (!templateCache.ContainsKey(templateFile))
+                if (!NumberCache.ContainsKey(templateFile))
                 {
                     Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
                     NumberCache.Add(templateFile, template);
@@ -673,14 +696,27 @@ namespace WindowsFormsApp1
 
             foreach (string templateFile in templateFiles2)
             {
-                if (!templateCache.ContainsKey(templateFile))
+                if (!templateCache1.ContainsKey(templateFile))
                 {
                     Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
                     templateCache1.Add(templateFile, template);
                 }
             }
 
-            
+            // resourceフォルダ内のテンプレート画像をキャッシュに読み込む
+            string resourceDir3 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resource", "sub2message_v2");
+            string[] templateFiles3 = Directory.GetFiles(resourceDir3, "*.png");
+
+            foreach (string templateFile in templateFiles3)
+            {
+                if (!templateCache2.ContainsKey(templateFile))
+                {
+                    Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
+                    templateCache2.Add(templateFile, template);
+                }
+            }
+
+
 
             textBox1.Font = new Font(textBox1.Font.FontFamily, 24); // サイズを24に設定
             textBox2.Font = new Font(textBox1.Font.FontFamily, 24); // サイズを24に設定
@@ -735,7 +771,7 @@ namespace WindowsFormsApp1
         };
 
             Rectangle[] ocr = {
-            new Rectangle(179, 645, 130, 50),  // 1つ目の領域
+            new Rectangle(179, 645, 160, 60),  // 1つ目の領域
             // 他の条件に基づく領域もここに追加
         };
 
@@ -816,13 +852,6 @@ namespace WindowsFormsApp1
                 {
                     if (trimmed.Width == 40 && trimmed.Height == 60)
                     {
-                        //// pictureBoxに表示
-                        //if (pictureBox4.Image != null)
-                        //{
-                        //    pictureBox4.Image.Dispose();
-                        //}
-                        //pictureBox4.Image = trimmed.ToBitmap();
-
                         foreach (var entry in templateCache1)
                         {
                             string templateFile = entry.Key;
@@ -852,6 +881,7 @@ namespace WindowsFormsApp1
 
                         if (frameCounter % 2 == 0)
                         {
+                            SaveMatAsImage(trimmed, 1);
                             //pictureBox4.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
                         }
                     }
@@ -914,6 +944,7 @@ namespace WindowsFormsApp1
 
                         if (frameCounter % 2 == 0)
                         {
+                            //SaveMatAsImage(trimmed, 1);
                             //pictureBox2.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
                         }
                     }
@@ -979,10 +1010,7 @@ namespace WindowsFormsApp1
 
                             if (frameCounter % 10 == 0)
                             {
-
-
-                                //pictureBox.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", System.Drawing.Imaging.ImageFormat.Png);
-
+                                //SaveMatAsImage(trimmed, i);
                             }
                         }
                     }
@@ -991,9 +1019,18 @@ namespace WindowsFormsApp1
         }
 
 
+        public void SaveMatAsImage(Mat trimmed, int i)
+        {
+            // MatからBitmapへ変換
+            using (Bitmap bmp = trimmed.ToBitmap())
+            {
+                // 画像をPNG形式で保存
+                bmp.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", ImageFormat.Png);
+            }
+        }
 
 
-            //呼びだす際はusing使う事。使わないとメモリリークする
+        //呼びだす際はusing使う事。使わないとメモリリークする
         private Mat TrimFirstPixel(Mat resultMat1, int xSize, int ySize) {
             // 最初の白ピクセルを探索
             Rectangle firstWhitePixel = new Rectangle(0, 0, 0, 0); // 初期値として無効な位置を設定
@@ -1070,6 +1107,7 @@ namespace WindowsFormsApp1
 
         private void ProcessCroppedImage1(Mat cropped)
         {
+            lastHit3 = "";
             Image<Bgr, Byte> img = cropped.ToImage<Bgr, Byte>();
 
             // RGBの下限と上限を設定
@@ -1083,12 +1121,51 @@ namespace WindowsFormsApp1
             Image<Bgr, Byte> result = img.CopyBlank();
             result.SetValue(new Bgr(255, 255, 255), mask);
 
+            using (Mat resultMat1 = result.Mat)
+            {
+                using (Mat trimmed = TrimFirstPixel(resultMat1, 100, 45))
+                {
+                     SaveMatAsImage(trimmed, 2);
+
+                    if (trimmed.Width == 100 && trimmed.Height == 45)
+                    {
+                        
+                        foreach (var entry in templateCache2)
+                        {
+                            string templateFile = entry.Key;
+                            Mat template = entry.Value;
+
+                            using (Mat resultMat = new Mat())
+                            {
+                                // テンプレートマッチングを実行
+                                CvInvoke.MatchTemplate(trimmed, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
+
+                                // 一致率を計算
+                                double minVal = 0, maxVal = 0;
+                                Point minLoc = new Point(), maxLoc = new Point();
+                                CvInvoke.MinMaxLoc(resultMat, ref minVal, ref maxVal, ref minLoc, ref maxLoc);
+
+                                // 一致率をパーセンテージに変換
+                                double matchPercentage = maxVal * 100.0;
+
+
+                                if (matchPercentage >= 80)
+                                {
+                                    Console.WriteLine($"2Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
+                                    lastHit3 = Path.GetFileName(templateFile);
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+
             Rectangle[] areas = {
                 new Rectangle(0, 0, 60, 60),
                 new Rectangle(43, 0, 60, 60),
                 new Rectangle(87, 0, 60, 60),
             };
-
 
             // 各領域に対してトリミングを行い、異なるPictureBoxに表示
             for (int i = 0; i < areas.Length; i++)
