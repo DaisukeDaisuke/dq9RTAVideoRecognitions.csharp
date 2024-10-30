@@ -41,10 +41,15 @@ namespace WindowsFormsApp1
         private int preAction = -1;
         private bool Initialized = false;
         private int NeedDamage1 = -1;
+        private bool NeedDamage1Enabled = false;
         private int NeedDamage2 = -1;
+        private bool NeedDamage2Enabled = false;
+        private int lastdamage1 = -1;
+        private int lastdamage2 = -1;
         private int ActionIndex = 0;
         private int TurnIndex = 0;
         private int maybeCritical = -1;
+        private DateTime LastDetection = DateTime.Now;
 
         public int ConvertMatchResults(int[] matchResults)
         {
@@ -56,6 +61,10 @@ namespace WindowsFormsApp1
             int result = 0;
             bool hasValidNumber = false;
 
+            if (matchResults[0] == -1)
+            {
+                return -1;
+            }
             if (matchResults[1] == -1&& matchResults[2] != -1)
             {
                 return -1;
@@ -85,11 +94,14 @@ namespace WindowsFormsApp1
             if(dataGridView1.RowCount < participantId+1)
             {
                 dataGridView1.Rows.Add();
+                // 一番下の行にスクロール
+                dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.RowCount - 1;
+                dataGridView1.Rows[participantId].Cells[0].Value = participantId.ToString();
             }
 
             // ダメージが不明の状態で行動を記録
             battleLog[participantId].Add(new BattleAction(action));
-            dataGridView1.Rows[participantId].Cells[ActionIndex * 2].Value = BattleAction.GetActionName(action);
+            dataGridView1.Rows[participantId].Cells[ActionIndex * 2 + 1].Value = BattleAction.GetActionName(action);
 
 
         }
@@ -105,7 +117,7 @@ namespace WindowsFormsApp1
                 battleLog[participantId][actionIndex] = new BattleAction(newAction);
 
                 // DataGridViewの更新
-                dataGridView1.Rows[participantId].Cells[actionIndex * 2].Value = BattleAction.GetActionName(newAction);
+                dataGridView1.Rows[participantId].Cells[actionIndex * 2 + 1].Value = BattleAction.GetActionName(newAction);
             }
             else
             {
@@ -127,7 +139,7 @@ namespace WindowsFormsApp1
                     action.Damage = damage;
                 }
 
-                dataGridView1.Rows[participantId].Cells[actionIndex * 2 + 1].Value = damage;
+                dataGridView1.Rows[participantId].Cells[actionIndex * 2 + 2].Value = damage;
             }
         }
 
@@ -146,10 +158,13 @@ namespace WindowsFormsApp1
                     Initialized = true;
                     ActionIndex = 0;
                     TurnIndex = 0;
-                    for (int i = 0; i < 6; i++)
-                    {
-                        dataGridView1.Columns.Add($"Column{i + 1}", $"Column {i + 1}");
-                    }
+                    LastDetection = DateTime.Now;
+                    NeedDamage2Enabled = false;
+                    NeedDamage2 = -1;
+                    lastdamage2 = -1;
+                    NeedDamage1Enabled = false;
+                    NeedDamage1 = -1;
+                    lastdamage1 = -1;
                 }
                 return true;
             }
@@ -169,95 +184,132 @@ namespace WindowsFormsApp1
                 }
             }
 
-            if (NeedDamage1 != -1)
+            int damageTest1 = ConvertMatchResults(matchResults1);
+            int damageTest2 = ConvertMatchResults(matchResults2);
+           if (NeedDamage1 != -1&& NeedDamage1Enabled || lastdamage1 < damageTest1)
             {
-                if (lastHit1 == "guard.png" || lastHit1 == "miss.png")
+                if (lastHit1 == "guard.png" || lastHit1 == "miss.png" || lastHit1 == "miss2.png")
                 {
                     int turnind = NeedDamage1 & 0xfff;
                     int actionid = (NeedDamage1 >> 12) & 0xf;
-                    NeedDamage1 = -1;
+                    NeedDamage1Enabled = false;
+                    //NeedDamage1 = -1;
                     maybeCritical = -1;
                     UpdateDamage(turnind, actionid, 0);
                 }
-                int damageTest = ConvertMatchResults(matchResults1);
-                if (damageTest != -1)
+                
+                if (damageTest1 != -1)
+                {
+                    lastdamage1 = damageTest1;
+                    int turnind = NeedDamage1 & 0xfff;
+                    int actionid = (NeedDamage1 >> 12) & 0xf;
+                    UpdateDamage(turnind, actionid, damageTest1);
+                    NeedDamage1Enabled = false;
+                    //NeedDamage1 = -1;
+                }
+                else
+                {
+                    
+                    if (damageTest2 != -1&& damageTest1 < damageTest2)
+                    {
+                        lastdamage1 = damageTest2;
+                        int turnind = NeedDamage1 & 0xfff;
+                        int actionind = (NeedDamage1 >> 12) & 0xf;
+                        NeedDamage1Enabled = false;
+                        //NeedDamage1 = -1;
+                        UpdateDamage(turnind, actionind, damageTest2);
+                    }
+                }
+                return true;
+            }
+/*            else if (!NeedDamage1Enabled && NeedDamage1 != -1)
+            {
+                if (lastdamage1 > 0 && lastdamage1 < damageTest1 && damageTest1 != -1)
                 {
                     int turnind = NeedDamage1 & 0xfff;
                     int actionid = (NeedDamage1 >> 12) & 0xf;
-                    NeedDamage1 = -1;
-                    UpdateDamage(turnind, actionid, damageTest);
+                    UpdateDamage(turnind, actionid, damageTest2);
                 }
-                else
-                {
-                    damageTest = ConvertMatchResults(matchResults2);
-                    if (damageTest != -1)
-                    {
-                        int turnind = NeedDamage1 & 0xfff;
-                        int actionind = (NeedDamage1 >> 12) & 0xf;
-                        NeedDamage1 = -1;
-                        UpdateDamage(turnind, actionind, damageTest);
-                    }
-                }
-                return true;
-            }
-
-            if (NeedDamage2 != -1)
+            }*/else if ((NeedDamage2 != -1&& NeedDamage2Enabled) || lastdamage2 < damageTest2)
             {
-                if (lastHit1 == "guard.png"||lastHit1 == "miss.png")
+                if (lastHit1 == "guard.png"||lastHit1 == "miss.png"||lastHit1 == "miss2.png")
                 {
                     int turnind = NeedDamage2 & 0xfff;
                     int actionind = (NeedDamage2 >> 12) & 0xf;
-                    NeedDamage2 = -1;
+                    //NeedDamage2 = -1;
+                    NeedDamage2Enabled = false;
                     maybeCritical = -1;
+                    lastdamage2 = -1;
                     UpdateDamage(turnind, actionind, 0);
                 }
-                int damageTest = ConvertMatchResults(matchResults2);
-                if (damageTest != -1)
+                if (damageTest2 != -1)
                 {
                     int turnind = NeedDamage2 & 0xfff;
                     int actionind = (NeedDamage2 >> 12) & 0xf;
-                    NeedDamage2 = -1;
-                    UpdateDamage(turnind, actionind, damageTest);
+                    NeedDamage2Enabled = false;
+                    //NeedDamage2 = -1;
+                    lastdamage2 = damageTest2;
+                    UpdateDamage(turnind, actionind, damageTest2);
                 }
                 else
                 {
-                    damageTest = ConvertMatchResults(matchResults1);
-                    if (damageTest != -1)
+                    if (damageTest1 != -1 && damageTest2 < damageTest1)
                     {
                         int turnind = NeedDamage2 & 0xfff;
                         int actionid = (NeedDamage2 >> 12) & 0xf;
-                        NeedDamage2 = -1;
-                        UpdateDamage(turnind, actionid, damageTest);
+                        NeedDamage2Enabled = false;
+                        lastdamage2 = damageTest1;
+                        //NeedDamage2 = -1;
+                        UpdateDamage(turnind, actionid, damageTest1);
                     }
                 }
                 return true;
             }
+/*            else if (!NeedDamage2Enabled && NeedDamage2 != -1)
+            {
+                if (lastdamage1 > 0 && lastdamage2 < damageTest2 && damageTest2 != -1)
+                {
+                    int turnind = NeedDamage2 & 0xfff;
+                    int actionid = (NeedDamage2 >> 12) & 0xf;
+                    UpdateDamage(turnind, actionid, damageTest2);
+                }
+            }*/
 
             if (lastHit1 == "sukara.png")
             {
                 action = BattleAction.BUFF;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
             }
             if(lastHit1 == "hadou.png")
             {
                 action = BattleAction.DISRUPTIVE_WAVE;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
             }
             if (lastHit1 == "yaketuku.png")
             {
                 action = BattleAction.BURNING_BREATH;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
             }
             if (lastHit1 == "zilyoukuu.png")
             {
                 action = BattleAction.SKY_ATTACK;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage2 = -1;
             }
             if (lastHit1 == "merazoma.png")
             {
                 action = BattleAction.MERA_ZOMA;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage2 = -1;
             }
             if (lastHit1 == "mira-.png")
             {
                 action = BattleAction.MAGIC_MIRROR;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
             }
 
             if (lastHit1 == "erugio.png"&&lastHit2 == "attack.png")
@@ -265,61 +317,125 @@ namespace WindowsFormsApp1
                 maybeCritical = (ActionIndex << 12) | TurnIndex;
                 action = BattleAction.ATTACK_ALLY;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage2 = -1;
             }
 
             if(lastHit1 == "samidare.png")
             {
                 action = BattleAction.MULTITHRUST;
                 NeedDamage2 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage1 = -1;
             }
 
             if (lastHit1 == "no_hadou.png")
             {
                 action = BattleAction.LAUGH;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
             }
 
             if(lastHit1 == "tameru.png")
             {
                 action = BattleAction.PSYCHE_UP;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
             }
 
             if(lastHit1 == "zigosupa.png")
             {
                 action = BattleAction.LIGHTNING_STORM;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage2 = -1;
             }
 
             if(lastHit1 == "kuroi.png")
             {
                 action = BattleAction.DARK_BREATH;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage2 = -1;
             }
 
             if(lastHit1 == "erugio.png" && lastHit2 == "uhsc.png")
             {
                 action = BattleAction.ULTRA_HIGH_SPEED_COMBO;
                 NeedDamage2 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage1 = -1;
             }
 
             if(lastHit1 == "sutemi.png")
             {
                 action = BattleAction.DOUBLE_UP;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
             }
             if(lastHit1 == "meisou.png")
             {
                 action = BattleAction.MEDITATION;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
             }
             if(lastHit1 == "madannte.png"){
                 action = BattleAction.MAGIC_BURST;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage2 = -1;
+            }
+            if (lastHit1 == "ice.png")
+            {
+                action = BattleAction.FREEZING_BLIZZARD;
+                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage2 = -1;
+            }
+            if(lastHit1 == "fullheal.png")
+            {
+                action = BattleAction.FULLHEAL;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+            }
+            if(lastHit1 == "more_heal.png")
+            {
+                action = BattleAction.MORE_HEAL;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+            }
+
+            if (lastHit1 == "defense_champion.png" &&lastHit2 == "defense_champion2.png")
+            {
+                action = BattleAction.DEFENDING_CHAMPION;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+            }
+
+            if(lastHit1 == "ayasii.png")
+            {
+                action = BattleAction.LULLAB_EYE;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
             }
 
 
+            if (lastHit1 == "mp.png" && lastHit2 == "inori.png")
+            {
+                action = BattleAction.RESTORE_MP;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+            }
+
+            if(lastHit1 == "WakeUp.png"&&lastHit2 != "inori.png")
+            {
+                action = BattleAction.TURN_SKIPPED;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+            }
 
 
             if (action != -1&&action != preAction && (lastHit1 != "" || lastHit2 != ""))
             {
-                if(lastHit2 != "attack.png")
+                NeedDamage1Enabled = NeedDamage1 != -1;
+                NeedDamage2Enabled = NeedDamage2 != -1;
+                lastdamage1 = -1;
+                lastdamage2 = -1;
+
+                if (lastHit2 != "attack.png")
                 {
                     maybeCritical = -1;
                 }
@@ -336,19 +452,115 @@ namespace WindowsFormsApp1
                     TurnIndex++;
                 }
             }
-
-            if (lastHit1 == "")
+            else if(action != -1 && action == preAction)
             {
-                preAction = 0;
+                LastDetection = DateTime.Now;
             }
+
+            DateTime currentTime = DateTime.Now;
+
+            //Debug.WriteLine((currentTime - LastDetection).TotalSeconds);
+
+            if ((currentTime - LastDetection).TotalSeconds > 3)
+            {
+                // LastDetectionは1秒以上前です
+                if (lastHit1 == "")
+                {
+                    preAction = 0;
+                }
+            }
+            
            
 
             return true;
         }
 
+        // DataGridViewの初期設定
+        private void InitializeDataGridView()
+        {
+            // スクロールバーの幅を取得
+            int scrollBarWidth = SystemInformation.VerticalScrollBarWidth;
+
+            // カラムの追加
+            for (int i = 0; i < 7; i++)
+            {
+                dataGridView1.Columns.Add($"Column{i + 1}", $"Column {i + 1}");
+            }
+
+            // 各カラムのヘッダーテキスト設定
+            dataGridView1.Columns[0].HeaderText = "ind";
+            dataGridView1.Columns[1].HeaderText = "AcT1";
+            dataGridView1.Columns[2].HeaderText = "D1";
+            dataGridView1.Columns[3].HeaderText = "AcT2";
+            dataGridView1.Columns[4].HeaderText = "D2";
+            dataGridView1.Columns[5].HeaderText = "AcT3";
+            dataGridView1.Columns[6].HeaderText = "D3";
+
+            // 最初のカラム幅の設定
+            AdjustColumnWidths();
+        }
+
+        private bool isMinimized = false;
+
+        // フォームのサイズ変更イベントで呼び出すメソッド
+        private void Form1_Resize(object sender, EventArgs e)
+        {
+            if (this.WindowState == FormWindowState.Minimized)
+            {
+                isMinimized = true;
+            }
+            else if (isMinimized && this.WindowState == FormWindowState.Normal)
+            {
+                // 最小化から復元された場合にDataGridViewのサイズとカラム幅を再調整
+                isMinimized = false;
+                AdjustColumnWidths();
+            }
+            else
+            {
+                // 通常のサイズ変更時も追従するように再調整
+                AdjustColumnWidths();
+            }
+        }
+
+        // DataGridViewとカラム幅を調整するメソッド
+        private void AdjustColumnWidths()
+        {
+            int scrollBarWidth = SystemInformation.VerticalScrollBarWidth;
+            int totalWidth = dataGridView1.Width - scrollBarWidth - 20;
+            if (this.ClientSize.Width < 300)
+            {
+                totalWidth -= 10;
+            }
+
+            // デフォルトカラム幅
+            int columnCount = 4;
+            int halfWidthColumnCount = 3;
+            int defaultWidth = totalWidth / (columnCount + (halfWidthColumnCount / 4));
+            int numberColumnWidth = defaultWidth / 4;
+
+            // カラム幅の設定
+            dataGridView1.Columns[0].Width = numberColumnWidth;
+            dataGridView1.Columns[1].Width = defaultWidth;
+            dataGridView1.Columns[2].Width = numberColumnWidth;
+            dataGridView1.Columns[3].Width = defaultWidth;
+            dataGridView1.Columns[4].Width = numberColumnWidth;
+            dataGridView1.Columns[5].Width = defaultWidth;
+            dataGridView1.Columns[6].Width = numberColumnWidth;
+
+            // DataGridViewのサイズをフォームに合わせて調整（マージン分を差し引く）
+            int marginX = 25;
+            int marginY = 205;
+            dataGridView1.Width = this.ClientSize.Width - marginX;
+            dataGridView1.Height = this.ClientSize.Height - marginY;
+        }
+
         public Form1()
         {
             InitializeComponent();
+            InitializeDataGridView();
+
+            // Resizeイベントでフォームサイズ変更時にDataGridViewの幅を追従
+            this.Resize += new EventHandler(Form1_Resize);
 
             using (var sde = new SystemDeviceEnumerator())
             {
@@ -391,11 +603,39 @@ namespace WindowsFormsApp1
             // テンプレート画像をキャッシュ
             LoadTemplatesToCache();
 
-            for (int i = 0; i < 6; i++)
-            {
-                dataGridView1.Columns.Add($"Column{i + 1}", $"Column {i + 1}");
-            }
+            //// DataGridViewの幅が644の場合で、スクロールバーの幅を考慮する
+            //int scrollBarWidth = SystemInformation.VerticalScrollBarWidth; // スクロールバーの幅
+            //int totalWidth = 537 - scrollBarWidth; // スクロールバーの幅を引いたDataGridViewの有効幅
+            //int columnCount = 4;  // デフォルト幅のカラム数
+            //int halfWidthColumnCount = 3; // 幅が半分のカラムの数
 
+            //// カラムのデフォルト幅と半分の幅を計算
+            //int defaultWidth = totalWidth / (columnCount + (halfWidthColumnCount / 4));
+            //int numberColumnWidth = defaultWidth / 4;
+
+            //// カラムの追加
+            //for (int i = 0; i < 7; i++)
+            //{
+            //    dataGridView1.Columns.Add($"Column{i + 1}", $"Column {i + 1}");
+            //}
+
+            //// カラムの役割と幅を設定
+            //dataGridView1.Columns[0].HeaderText = "ind";
+            //dataGridView1.Columns[1].HeaderText = "AcT1";
+            //dataGridView1.Columns[2].HeaderText = "D1";
+            //dataGridView1.Columns[3].HeaderText = "AcT2";
+            //dataGridView1.Columns[4].HeaderText = "D2";
+            //dataGridView1.Columns[5].HeaderText = "AcT3";
+            //dataGridView1.Columns[6].HeaderText = "D3";
+
+            //// 幅の設定
+            //dataGridView1.Columns[0].Width = numberColumnWidth;
+            //dataGridView1.Columns[1].Width = defaultWidth;
+            //dataGridView1.Columns[2].Width = numberColumnWidth;
+            //dataGridView1.Columns[3].Width = defaultWidth;
+            //dataGridView1.Columns[4].Width = numberColumnWidth;
+            //dataGridView1.Columns[5].Width = defaultWidth;
+            //dataGridView1.Columns[6].Width = numberColumnWidth;
             //https://github.com/rlabrecque/RLSolitaireBot/blob/f4ca851d26d348f79823e0750a1792a403cf4a45/SolitaireAI/Solitaire.cs#L120
         }
 
@@ -458,33 +698,21 @@ namespace WindowsFormsApp1
 
                 if (!frame.IsEmpty)
                 {
-                    using (Mat resizedFrame = new Mat())
+                    // 複数領域を条件に基づいて処理する
+                    ProcessCaptureAreas(frame);
+                    using (Mat resizedFrame1 = new Mat(frame, new Rectangle(0, 0, 958, 718)))
                     {
-                        CvInvoke.Resize(frame, resizedFrame, new Size(480, 270)); // フレームをリサイズ
-
-                        if (pictureBox1.Image != null)
+                        using (Mat resizedFrame2 = new Mat())
                         {
-                            pictureBox1.Image.Dispose();
+                            CvInvoke.Resize(resizedFrame1, resizedFrame2, new Size(958 / 4, 718 / 4)); // フレームをリサイズ
+
+                            if (pictureBox1.Image != null)
+                            {
+                                pictureBox1.Image.Dispose();
+                            }
+                            // フレームの更新（ミラー用に再描画）
+                            pictureBox1.Image = resizedFrame2.ToBitmap();
                         }
-                        // フレームの更新（ミラー用に再描画）
-                        pictureBox1.Image = resizedFrame.ToBitmap();
-
-                        // 複数領域を条件に基づいて処理する
-                        ProcessCaptureAreas(frame);
-
-                        //pictureBox1.Image = resizedFrame.ToBitmap();
-
-                        // フレームカウンタを増加
-                        frameCounter++;
-
-                        // 5回に1回画像を保存
-                        if (frameCounter % 10 == 0)
-                        {
-                            //pictureBox1.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
-
-                        }
-
-
                     }
                 }
 
@@ -506,12 +734,12 @@ namespace WindowsFormsApp1
             // 他の条件に基づく領域もここに追加
         };
 
-        Rectangle[] ocr = {
+            Rectangle[] ocr = {
             new Rectangle(179, 645, 130, 50),  // 1つ目の領域
             // 他の条件に基づく領域もここに追加
         };
 
-        Rectangle[] ocr2 = {
+            Rectangle[] ocr2 = {
             new Rectangle(518, 619, 100, 90),  // 1つ目の領域
             // 他の条件に基づく領域もここに追加
         };
@@ -540,16 +768,30 @@ namespace WindowsFormsApp1
                 //// この領域に対する画像処理
                 using (Mat cropped = new Mat(frame, area))
                 {
-                   ProcessCroppedImage2(cropped);
+                    ProcessCroppedImage2(cropped);
                 }
             }
 
+            foreach (var area in areas)
+            {
+                DrawCaptureArea(frame, area);
+            }
+
+            foreach (var area in ocr)
+            {
+                DrawCaptureArea(frame, area);
+            }
+
+            foreach (var area in ocr2)
+            {
+               DrawCaptureArea(frame, area);
+            }
         }
 
         // キャプチャ領域の枠を描画
         private void DrawCaptureArea(Mat frame, Rectangle area)
         {
-            CvInvoke.Rectangle(frame, area, new MCvScalar(0, 255, 0), 1); // 緑色の枠を描画
+            CvInvoke.Rectangle(frame, area, new MCvScalar(150, 150, 150), 5); // 緑色の枠を描画
         }
 
         private void ProcessCroppedImage2(Mat cropped)
@@ -574,12 +816,12 @@ namespace WindowsFormsApp1
                 {
                     if (trimmed.Width == 40 && trimmed.Height == 60)
                     {
-                        // pictureBoxに表示
-                        if (pictureBox4.Image != null)
-                        {
-                            pictureBox4.Image.Dispose();
-                        }
-                        pictureBox4.Image = trimmed.ToBitmap();
+                        //// pictureBoxに表示
+                        //if (pictureBox4.Image != null)
+                        //{
+                        //    pictureBox4.Image.Dispose();
+                        //}
+                        //pictureBox4.Image = trimmed.ToBitmap();
 
                         foreach (var entry in templateCache1)
                         {
@@ -637,11 +879,11 @@ namespace WindowsFormsApp1
                 {
                     if (trimmed.Width == 130 && trimmed.Height == 45)
                     {
-                        if (pictureBox2.Image != null)
-                        {
-                            pictureBox2.Image.Dispose();
-                        }
-                        pictureBox2.Image = trimmed.ToBitmap();
+                        //if (pictureBox2.Image != null)
+                        //{
+                        //    pictureBox2.Image.Dispose();
+                        //}
+                        //pictureBox2.Image = trimmed.ToBitmap();
 
                         foreach (var entry in templateCache)
                         {
@@ -678,10 +920,6 @@ namespace WindowsFormsApp1
                 }
             }
 
-
-            // PictureBoxを配列またはリストで管理
-            PictureBox[] pictureBoxes = { pictureBox5, pictureBox6, pictureBox7 };
-
             // トリミングする領域の配列
             Rectangle[] areas = {
                 new Rectangle(0, 0, 60, 60),
@@ -693,7 +931,6 @@ namespace WindowsFormsApp1
             for (int i = 0; i < areas.Length; i++)
             {
                 var area = areas[i];
-                var pictureBox = pictureBoxes[i];
 
                 result.ROI = area;
 
@@ -740,14 +977,10 @@ namespace WindowsFormsApp1
                                 matchResults1[i] = -1;
                             }
 
-                            // PictureBoxに画像を表示
-                            if (pictureBox.Image != null)
-                            {
-                                pictureBox.Image.Dispose();
-                            }
-                            pictureBox.Image = trimmed.ToBitmap();
                             if (frameCounter % 10 == 0)
                             {
+
+
                                 //pictureBox.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", System.Drawing.Imaging.ImageFormat.Png);
 
                             }
@@ -856,14 +1089,11 @@ namespace WindowsFormsApp1
                 new Rectangle(87, 0, 60, 60),
             };
 
-            PictureBox[] pictureBoxes = { pictureBox8, pictureBox9, pictureBox10 };
-
 
             // 各領域に対してトリミングを行い、異なるPictureBoxに表示
             for (int i = 0; i < areas.Length; i++)
             {
                 var area = areas[i];
-                var pictureBox = pictureBoxes[i];
 
                 result.ROI = area;
 
@@ -913,27 +1143,14 @@ namespace WindowsFormsApp1
 
                             if (frameCounter % 2 == 0)
                             {
-                                // PictureBoxに画像を表示
-                                if (pictureBox.Image != null)
-                                {
-                                    pictureBox.Image.Dispose();
-                                }
-                                pictureBox.Image = trimmed.ToBitmap();
-                               // pictureBox.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", System.Drawing.Imaging.ImageFormat.Png);
+                                //pictureBox.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", System.Drawing.Imaging.ImageFormat.Png);
                             }
                         }
                     }
                 }
             }
 
-            result.ROI = Rectangle.Empty;
-
-            // pictureBoxに表示
-            if (pictureBox3.Image != null)
-            {
-                pictureBox3.Image.Dispose();
-            }
-            pictureBox3.Image = result.ToBitmap();
+            //result.ROI = Rectangle.Empty;
 
             // 5回に1回画像を保存
         }
