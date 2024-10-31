@@ -17,6 +17,10 @@ using System.Linq;
 using System.Diagnostics;
 using erugiosu2;
 using System.Drawing.Imaging;
+using System.Threading.Tasks;
+using System.Text;
+using System.Reflection.Emit;
+using System.Drawing.Printing;
 
 namespace WindowsFormsApp1
 {
@@ -52,6 +56,20 @@ namespace WindowsFormsApp1
         private int TurnIndex = 0;
         private int maybeCritical = -1;
         private DateTime LastDetection = DateTime.Now;
+        // グローバルスコープで一致率の最も高い画像名と一致率を格納する変数を定義
+        double[] highestMatchPercentage = new double[3] { 0, 0, 0 };
+        string[] highestMatchImageNames = new string[3] { "", "", "" };
+        private int marginX = 25;
+        private int marginY = 205;
+
+
+
+        public bool updateText1()
+        {
+            UpdateOutputText(FormatParseInput() + " " + BattleAction.updateText1(battleLog));
+
+            return true;
+        }
 
         public int ConvertMatchResults(int[] matchResults)
         {
@@ -105,7 +123,7 @@ namespace WindowsFormsApp1
             battleLog[participantId].Add(new BattleAction(action));
             dataGridView1.Rows[participantId].Cells[ActionIndex * 2 + 1].Value = BattleAction.GetActionName(action);
 
-
+            updateText1();
         }
 
         // 行動を修正するための関数
@@ -126,6 +144,8 @@ namespace WindowsFormsApp1
                 // participantIdが存在しないか、actionIndexが無効な場合の処理
                 MessageBox.Show("指定された行動が見つかりません。");
             }
+
+            updateText1();
         }
 
         void UpdateDamage(int participantId, int actionIndex, int damage)
@@ -142,10 +162,12 @@ namespace WindowsFormsApp1
                 }
 
                 dataGridView1.Rows[participantId].Cells[actionIndex * 2 + 2].Value = damage;
+
+                updateText1();
             }
         }
 
-        private bool ProcessState()
+        private async void ProcessState()
         {
             if (lastHit1 == "erugio.png"&&lastHit2 == "reset.png")
             {
@@ -167,8 +189,11 @@ namespace WindowsFormsApp1
                     NeedDamage1Enabled = false;
                     NeedDamage1 = -1;
                     lastdamage1 = -1;
+                    UpdateOutputText("");
+                    await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
+
                 }
-                return true;
+                return;
             }
             Initialized = false;
 
@@ -222,7 +247,7 @@ namespace WindowsFormsApp1
                         UpdateDamage(turnind, actionind, damageTest2);
                     }
                 }
-                return true;
+                return;
             }
 /*            else if (!NeedDamage1Enabled && NeedDamage1 != -1)
             {
@@ -265,7 +290,7 @@ namespace WindowsFormsApp1
                         UpdateDamage(turnind, actionid, damageTest1);
                     }
                 }
-                return true;
+                return;
             }
 /*            else if (!NeedDamage2Enabled && NeedDamage2 != -1)
             {
@@ -317,7 +342,7 @@ namespace WindowsFormsApp1
             if (lastHit1 == "erugio.png"&&lastHit2 == "attack.png")
             {
                 maybeCritical = (ActionIndex << 12) | TurnIndex;
-                action = BattleAction.ATTACK_ALLY;
+                action = BattleAction.ATTACK_ENEMY;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
                 NeedDamage2 = -1;
             }
@@ -495,7 +520,7 @@ namespace WindowsFormsApp1
             
            
 
-            return true;
+            return;
         }
 
         // DataGridViewの初期設定
@@ -571,16 +596,52 @@ namespace WindowsFormsApp1
             dataGridView1.Columns[6].Width = numberColumnWidth;
 
             // DataGridViewのサイズをフォームに合わせて調整（マージン分を差し引く）
-            int marginX = 25;
-            int marginY = 205;
             dataGridView1.Width = this.ClientSize.Width - marginX;
             dataGridView1.Height = this.ClientSize.Height - marginY;
+        }
+
+        // コピー ボタンのクリック イベント ハンドラー
+        private void CopyButton_Click(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(outputTextBox.Text))
+            {
+                Clipboard.SetText(outputTextBox.Text);
+                //MessageBox.Show("テキストがコピーされました!", "コピー完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("コピーするテキストがありません", "コピーエラー", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+
+        // 出力エリアに動的にデータを追加するメソッド例
+        private void UpdateOutputText(string data)
+        {
+            outputTextBox.Text = data;
         }
 
         public Form1()
         {
             InitializeComponent();
             InitializeDataGridView();
+
+            DebugTextBox.Visible = false;  // 初期状態で非表示
+            OutputLabel.Visible = false;  // 初期状態で非表示
+
+            outputTextBox.Visible = false;  // 初期状態で非表示
+            DebugLabel.Visible = false;  // 初期状態で非表示
+
+            TimeVisible.Checked = true;
+
+            // outputTextBox を設定
+            outputTextBox.ReadOnly = true;
+            outputTextBox.Multiline = true;
+            outputTextBox.ScrollBars = ScrollBars.Vertical;
+
+            copyButton.Click += CopyButton_Click;
+
+            // 必要に応じて初期出力データを設定
+            outputTextBox.Text = "";
 
             // Resizeイベントでフォームサイズ変更時にDataGridViewの幅を追従
             this.Resize += new EventHandler(Form1_Resize);
@@ -625,41 +686,6 @@ namespace WindowsFormsApp1
 
             // テンプレート画像をキャッシュ
             LoadTemplatesToCache();
-
-            //// DataGridViewの幅が644の場合で、スクロールバーの幅を考慮する
-            //int scrollBarWidth = SystemInformation.VerticalScrollBarWidth; // スクロールバーの幅
-            //int totalWidth = 537 - scrollBarWidth; // スクロールバーの幅を引いたDataGridViewの有効幅
-            //int columnCount = 4;  // デフォルト幅のカラム数
-            //int halfWidthColumnCount = 3; // 幅が半分のカラムの数
-
-            //// カラムのデフォルト幅と半分の幅を計算
-            //int defaultWidth = totalWidth / (columnCount + (halfWidthColumnCount / 4));
-            //int numberColumnWidth = defaultWidth / 4;
-
-            //// カラムの追加
-            //for (int i = 0; i < 7; i++)
-            //{
-            //    dataGridView1.Columns.Add($"Column{i + 1}", $"Column {i + 1}");
-            //}
-
-            //// カラムの役割と幅を設定
-            //dataGridView1.Columns[0].HeaderText = "ind";
-            //dataGridView1.Columns[1].HeaderText = "AcT1";
-            //dataGridView1.Columns[2].HeaderText = "D1";
-            //dataGridView1.Columns[3].HeaderText = "AcT2";
-            //dataGridView1.Columns[4].HeaderText = "D2";
-            //dataGridView1.Columns[5].HeaderText = "AcT3";
-            //dataGridView1.Columns[6].HeaderText = "D3";
-
-            //// 幅の設定
-            //dataGridView1.Columns[0].Width = numberColumnWidth;
-            //dataGridView1.Columns[1].Width = defaultWidth;
-            //dataGridView1.Columns[2].Width = numberColumnWidth;
-            //dataGridView1.Columns[3].Width = defaultWidth;
-            //dataGridView1.Columns[4].Width = numberColumnWidth;
-            //dataGridView1.Columns[5].Width = defaultWidth;
-            //dataGridView1.Columns[6].Width = numberColumnWidth;
-            //https://github.com/rlabrecque/RLSolitaireBot/blob/f4ca851d26d348f79823e0750a1792a403cf4a45/SolitaireAI/Solitaire.cs#L120
         }
 
         private void LoadTemplatesToCache()
@@ -718,16 +744,117 @@ namespace WindowsFormsApp1
 
 
 
-            textBox1.Font = new Font(textBox1.Font.FontFamily, 24); // サイズを24に設定
-            textBox2.Font = new Font(textBox1.Font.FontFamily, 24); // サイズを24に設定
+            DebugTextBox.Font = new Font(DebugTextBox.Font.FontFamily, 10); // サイズを24に設定
 
         }
 
-        private void CaptureFrame(object sender, EventArgs e)
+        // ParseInputの出力をフォーマットして文字列として返す関数
+        public string FormatParseInput()
         {
+            int[] numbers = ParseInputTimer();
+            StringBuilder sb = new StringBuilder();
 
+            // 文字列として"1 0 0"のように結合
+            for (int i = 0; i < numbers.Length; i++)
+            {
+                sb.Append(numbers[i]);
+                if (i < numbers.Length - 1)
+                    sb.Append(" ");
+            }
+
+            return sb.ToString();
+        }
+
+        public int[] ParseInputTimer()
+        {
+            var input = InputTimer.Text;
+            // 空白や改行をトリム
+            input = input.Trim();
+
+            // 入力が空の場合
+            if (string.IsNullOrEmpty(input)) return new int[] { 0, 0, 0 };
+
+            // スペースで区切り、整数に変換
+            string[] parts = input.Split(' ');
+
+            // 部分が3つに分かれていない場合
+            if (parts.Length != 3) return new int[] { 0, 0, 0 };
+
+            // 変換結果を格納する配列
+            int[] numbers = new int[3];
+
+            // 各部分を数値化
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (!int.TryParse(parts[i], out numbers[i]))
+                {
+                    return new int[] { 0, 0, 0 }; // 変換失敗時
+                }
+            }
+
+            return numbers;
+        }
+
+        private async Task onTimeReadComplete(string timer)
+        {
+            var text = NormalizeTime(timer);
+            if (text != "") {
+                InputTimer.Text = text;
+            }
+            await Task.CompletedTask;
+            return;
+        }
+
+
+        static string NormalizeTime(string input)
+        {
+            // 正規表現パターンを定義（hh:mm:ss.ms または mm:ss.ms の形式を考慮）
+            var pattern = @"^(?:(\d+):)?(?:(\d+):)?(\d+)\.(\d+)$";
+            var match = Regex.Match(input, pattern);
+
+            if (match.Success)
+            {
+                int hours = match.Groups[1].Success ? int.Parse(match.Groups[1].Value) : 0;
+                int minutes = match.Groups[2].Success ? int.Parse(match.Groups[2].Value) : 0;
+                int seconds = int.Parse(match.Groups[3].Value);
+                int milliseconds = int.Parse(match.Groups[4].Value);
+
+                // 秒数を正規化
+                seconds += milliseconds / 100; // ミリ秒を秒に変換
+                if (seconds >= 60)
+                {
+                    minutes += seconds / 60;
+                    seconds %= 60;
+                }
+
+                // 分数を正規化
+                if (minutes >= 60)
+                {
+                    hours += minutes / 60;
+                    minutes %= 60;
+                }
+
+                // 正規化された形式で出力
+                return $"{hours} {minutes} {seconds}";
+            }
+
+            return "";
+        }
+
+        private async void CaptureFrame(object sender, EventArgs e)
+        {
             lastHit1 = "";
             lastHit2 = "";
+
+            highestMatchImageNames[0] = "";
+            highestMatchImageNames[1] = "";
+            highestMatchImageNames[2] = "";
+
+            highestMatchPercentage[0] = 0;
+            highestMatchPercentage[1] = 0;
+            highestMatchPercentage[2] = 0;
+
+
             using (Mat frame = new Mat())
             {
                 _capture.Read(frame);
@@ -752,8 +879,20 @@ namespace WindowsFormsApp1
                     }
                 }
 
-                textBox1.Text = string.Join(", ", matchResults1);
-                textBox2.Text = string.Join(", ", matchResults2);
+                StringBuilder sb = new StringBuilder();
+                sb.Append("int1: ").Append(string.Join(", ", matchResults1)).Append(" \r\n");
+                sb.Append("int2: ").Append(string.Join(", ", matchResults2)).Append(" \r\n");
+
+                // tem1, tem2, tem3の部分を追加
+                for (int j = 0; j < 3; j++)
+                {
+                    string templateName = string.IsNullOrEmpty(highestMatchImageNames[j]) ? "null" : highestMatchImageNames[j];
+                    double matchPercentage = highestMatchPercentage[j];
+                    sb.Append($"tem{j + 1}: {templateName}: {matchPercentage:F1}% \r\n");  // 一致率を1桁にフォーマット
+                }
+
+                DebugTextBox.Text = sb.ToString();
+
 
                 ProcessState();
 
@@ -871,6 +1010,13 @@ namespace WindowsFormsApp1
                                 double matchPercentage = maxVal * 100.0;
 
 
+                                // 現在の一致率がこれまでの最高値を超える場合のみ更新
+                                if (matchPercentage > highestMatchPercentage[2])
+                                {
+                                    highestMatchPercentage[2] = matchPercentage;
+                                    highestMatchImageNames[2] = Path.GetFileName(templateFile); // 画像名を保存
+                                }
+
                                 if (matchPercentage >= 80)
                                 {
                                     Console.WriteLine($"2Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
@@ -933,7 +1079,13 @@ namespace WindowsFormsApp1
                                 // 一致率をパーセンテージに変換
                                 double matchPercentage = maxVal * 100.0;
 
-                                
+                                // 現在の一致率がこれまでの最高値を超える場合のみ更新
+                                if (matchPercentage > highestMatchPercentage[0])
+                                {
+                                    highestMatchPercentage[0] = matchPercentage;
+                                    highestMatchImageNames[0] = Path.GetFileName(templateFile); // 画像名を保存
+                                }
+
                                 if (matchPercentage >= 80)
                                 {
                                     lastHit1 = Path.GetFileName(templateFile);
@@ -1148,6 +1300,12 @@ namespace WindowsFormsApp1
                                 // 一致率をパーセンテージに変換
                                 double matchPercentage = maxVal * 100.0;
 
+                                // 現在の一致率がこれまでの最高値を超える場合のみ更新
+                                if (matchPercentage > highestMatchPercentage[1])
+                                {
+                                    highestMatchPercentage[1] = matchPercentage;
+                                    highestMatchImageNames[1] = Path.GetFileName(templateFile); // 画像名を保存
+                                }
 
                                 if (matchPercentage >= 80)
                                 {
@@ -1232,13 +1390,6 @@ namespace WindowsFormsApp1
             // 5回に1回画像を保存
         }
 
-
-        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            _timer.Stop();
-            _capture.Dispose();
-        }
-
         private void pictureBox1_Click(object sender, EventArgs e)
         {
 
@@ -1257,6 +1408,170 @@ namespace WindowsFormsApp1
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
 
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void copyButton_Click_1(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ReloadState()
+        {
+            if (!TableOnlyVisible.Checked)
+            {
+                // チェックボックスの状態に応じてDebugTextBoxの表示を切り替える
+                DebugTextBox.Visible = showDebugCheckBox.Checked;
+                DebugLabel.Visible = showDebugCheckBox.Checked;
+            }
+
+            if (!TableOnlyVisible.Checked)
+            {
+                outputTextBox.Visible = OutputVisible.Checked;
+                OutputLabel.Visible = OutputVisible.Checked;
+            }
+
+            InputTimer.Visible = TimeVisible.Checked;
+            label2.Visible = TimeVisible.Checked;
+            if (!TableOnlyVisible.Checked)
+            {
+                copyButton.Visible = TimeVisible.Checked;
+            }
+
+            if (TableOnlyVisible.Checked)
+            {
+                //InputTimer.Visible = false;
+                InputTimer.Location = new Point(85, 10);
+                label2.Location = new Point(10, 14);
+                TimeVisible.Location = new Point(330, 12);
+                InputTimer.Visible = TimeVisible.Checked;
+                label2.Visible = TimeVisible.Checked;
+                copyButton.Visible = false;
+                outputTextBox.Visible = false;
+                OutputLabel.Visible = false;
+                DebugTextBox.Visible = false;
+                DebugLabel.Visible = false;
+                pictureBox1.Visible = false;
+
+                OutputVisible.Visible = false;
+                showDebugCheckBox.Visible = false;
+                marginX = 25;
+                marginY = 45;
+                dataGridView1.Location = new Point(12, 40);
+            }
+            else
+            {
+                pictureBox1.Visible = true;
+                //InputTimer.Visible = true;
+                InputTimer.Location = new Point(258, 24);
+                label2.Location = new Point(258, 9);
+                TimeVisible.Location = new Point(258, 138);
+                label2.Visible = TimeVisible.Checked;
+                copyButton.Visible = TimeVisible.Checked;
+                OutputVisible.Visible = true;
+                showDebugCheckBox.Visible = true;
+                outputTextBox.Visible = OutputVisible.Checked;
+                OutputLabel.Visible = OutputVisible.Checked;
+                DebugTextBox.Visible = showDebugCheckBox.Checked;
+                DebugLabel.Visible = showDebugCheckBox.Checked;
+                marginX = 25;
+                marginY = 205;
+                dataGridView1.Location = new Point(12, 198);
+            }
+
+
+            AdjustColumnWidths();
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            ReloadState();
+        }
+
+        private void OutputVisible_CheckedChanged(object sender, EventArgs e)
+        {
+            ReloadState();
+        }
+
+        private void TimerVisible_CheckedChanged(object sender, EventArgs e)
+        {
+            ReloadState();
+        }
+
+        private void checkBox1_CheckedChanged_1(object sender, EventArgs e)
+        {
+            ReloadState();
+        }
+
+
+        private const string ConfigFileName = "settings.config";
+        private const int TimeVisibleBit = 1 << 0;    // 1
+        private const int TableOnlyVisibleBit = 1 << 1; // 2
+        private const int ShowDebugBit = 1 << 2;      // 4
+        private const int OutputVisibleBit = 1 << 3;   // 8
+
+        private void SaveSettings()
+        {
+            int settings = 0;
+
+            if (TimeVisible.Checked) settings |= TimeVisibleBit;
+            if (TableOnlyVisible.Checked) settings |= TableOnlyVisibleBit;
+            if (showDebugCheckBox.Checked) settings |= ShowDebugBit;
+            if (OutputVisible.Checked) settings |= OutputVisibleBit;
+
+            File.WriteAllText(ConfigFileName, settings.ToString());
+        }
+
+        private void LoadSettings()
+        {
+            if (File.Exists(ConfigFileName))
+            {
+                string fileContent = File.ReadAllText(ConfigFileName);
+                if (int.TryParse(fileContent, out int settings))
+                {
+                    TimeVisible.Checked = (settings & TimeVisibleBit) != 0;
+                    TableOnlyVisible.Checked = (settings & TableOnlyVisibleBit) != 0;
+                    showDebugCheckBox.Checked = (settings & ShowDebugBit) != 0;
+                    OutputVisible.Checked = (settings & OutputVisibleBit) != 0;
+                }
+            }
+            else
+            {
+                // デフォルト値を設定
+                TimeVisible.Checked = true;
+                TableOnlyVisible.Checked = false;
+                showDebugCheckBox.Checked = false;
+                OutputVisible.Checked = false;
+            }
+        }
+
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            LoadSettings();
+            ReloadState();
+        }
+
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            SaveSettings();
+            _timer.Stop();
+            _capture.Dispose();
         }
     }
 }

@@ -18,6 +18,50 @@ namespace erugiosu2
             Action = action;
         }
 
+        public static string updateText1(Dictionary<int, List<BattleAction>> battleLog)
+        {
+            // 各カテゴリのデータを格納する StringBuilder
+            System.Text.StringBuilder damagesSb = new System.Text.StringBuilder();
+            System.Text.StringBuilder actionSb = new System.Text.StringBuilder();
+            System.Text.StringBuilder aActionsSb = new System.Text.StringBuilder();
+
+            // battleLog内のすべてのエントリをループ
+            foreach (var entry in battleLog)
+            {
+                foreach (var action in entry.Value)
+                {
+                    // ダメージが未確定の場合はスキップ
+                    if (action.IsDamagePending)
+                    {
+                        continue;
+                    }
+
+                    // 味方アクションの集計
+                    if (IsAllyAction(action)) // 味方かを判定する関数
+                    {
+                        aActionsSb.Append(action.Action).Append(" ");
+                    }
+                    else
+                    {
+                        // アクションを集計（例: actionSb に追加）
+                        actionSb.Append(action.Action).Append(" ");
+                    }
+
+                    // 確定したダメージ値を集計（例: damagesSb に追加）
+                    damagesSb.Append(action.Damage).Append(" ");
+                }
+            }
+
+            // 集計結果を文字列に変換
+            string damages = damagesSb.ToString().Trim();
+            string actions = actionSb.ToString().Trim();
+            string aActions = aActionsSb.ToString().Trim();
+
+            return $"\"{actions}\" \"{aActions}\" \"{damages}\"";
+        }
+
+
+
 
         public const int ATTACK_ENEMY = 1;
         public const int ULTRA_HIGH_SPEED_COMBO = 2;
@@ -66,6 +110,63 @@ namespace erugiosu2
         public const int MAGIC_WATER = 49;
         public const int SPECIAL_MEDICINE = 50;
         public const int DEAD = 51;
+
+
+        // 味方アクションかどうかを判定するダミー関数（実装は任意）
+        private static bool IsDamageActions(BattleAction action)
+        {
+            // AllyAction に action.Action がキーとして存在すれば、味方アクションと判定
+            return hasDamageActions.ContainsKey(action.Action);
+        }
+
+
+        private static readonly Dictionary<int, string> hasDamageActions = new()
+    {
+        { ATTACK_ENEMY, "攻撃" },
+        { ULTRA_HIGH_SPEED_COMBO, "超高速連打" },
+        { SKY_ATTACK, "上空から攻撃" },
+        { CRITICAL_ATTACK, "痛恨" },
+        { DARK_BREATH, "黒輝く息" },
+        { FREEZING_BLIZZARD, "凍える吹雪" },
+        { MERA_ZOMA, "メラゾーマ" },
+        { MULTITHRUST, "さみだれ" },
+        { ATTACK_ALLY, "攻撃" },
+        { LIGHTNING_STORM, "ジゴスパ" },
+        { MAGIC_BURST, "マダンテ" },
+        { MERCURIAL_THRUST, "しっぷう突き" },
+    };
+
+        // 味方アクションかどうかを判定するダミー関数（実装は任意）
+        private static bool IsAllyAction(BattleAction action)
+        {
+            // AllyAction に action.Action がキーとして存在すれば、味方アクションと判定
+            return AllyAction.ContainsKey(action.Action);
+        }
+
+        private static readonly Dictionary<int, string> AllyAction = new()
+    {
+        { BUFF, "スカラ" },
+        { PARALYSIS, "麻痺で動けない" },
+        { CURE_PARALYSIS, "麻痺回復" },
+        { MORE_HEAL, "ベホイム" },
+        { MIDHEAL, "ベホイミ" },
+        { DOUBLE_UP, "すてみ" },
+        { MULTITHRUST, "さみだれ" },
+        { ATTACK_ALLY, "攻撃" },
+        { HEAL, "ホイミ" },
+        { DEFENCE, "防御" },
+        { MAGIC_MIRROR, "ミラーシールド" },
+        { SLEEPING, "眠っている！" },
+        { CURE_SLEEPING, "起きた" },
+        { FULLHEAL, "ベホマ" },
+        { DEFENDING_CHAMPION, "大防御" },
+        { MERCURIAL_THRUST, "しっぷう突き" },
+        { TURN_SKIPPED, "**ターンスキップ**" },
+        { SAGE_ELIXIR, "賢者聖水" },
+        { ELFIN_ELIXIR, "エルフののみぐすり" },
+        { MAGIC_WATER, "まほうのせいすい" },
+        { DEAD, "しんでしまった！" }
+    };
 
         private static readonly Dictionary<int, string> actionNames = new()
     {
