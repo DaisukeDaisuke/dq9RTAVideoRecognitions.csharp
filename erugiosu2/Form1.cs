@@ -347,7 +347,7 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
             }
 
-            if(lastHit1 == "samidare.png")
+            if(lastHit1 == "samidare.png"||lastHit1 == "samidare2.png")
             {
                 action = BattleAction.MULTITHRUST;
                 NeedDamage2 = (ActionIndex << 12) | TurnIndex;
@@ -471,6 +471,13 @@ namespace WindowsFormsApp1
             if (lastHit1 == "sleeping2.png" && ( lastHit3 == "dead.png" || lastHit3 == "dead2.png"))
             {
                 action = BattleAction.DEAD;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+            }
+
+            if(lastHit1 == "song.png")
+            {
+                action = BattleAction.SONG;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
             }
@@ -1091,12 +1098,13 @@ namespace WindowsFormsApp1
                                     lastHit1 = Path.GetFileName(templateFile);
                                     Console.WriteLine($"Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
                                 }
+                                //SaveMatAsImage(trimmed, 1);
                             }
                         }
 
                         if (frameCounter % 2 == 0)
                         {
-                            //SaveMatAsImage(trimmed, 1);
+                            
                             //pictureBox2.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
                         }
                     }
