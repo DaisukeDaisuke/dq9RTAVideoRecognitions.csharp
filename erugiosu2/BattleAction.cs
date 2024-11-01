@@ -46,9 +46,11 @@ namespace erugiosu2
                         // アクションを集計（例: actionSb に追加）
                         actionSb.Append(action.Action).Append(" ");
                     }
-
-                    // 確定したダメージ値を集計（例: damagesSb に追加）
-                    damagesSb.Append(action.Damage).Append(" ");
+                    if (IsDamageActions(action))
+                    {
+                        // 確定したダメージ値を集計（例: damagesSb に追加）
+                        damagesSb.Append(action.Damage).Append(" ");
+                    }
                 }
             }
 
@@ -57,7 +59,7 @@ namespace erugiosu2
             string actions = actionSb.ToString().Trim();
             string aActions = aActionsSb.ToString().Trim();
 
-            return $"\"{actions}\" \"{aActions}\" \"{damages}\"";
+            return $"{actions}-{aActions}-{damages}-";
         }
 
 

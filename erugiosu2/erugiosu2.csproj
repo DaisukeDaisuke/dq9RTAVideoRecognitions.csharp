@@ -126,6 +126,9 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /E /I /Y "$(ProjectDir)resource" "$(TargetDir)resource"
+if not exist "$(TargetDir)\dll" mkdir "$(TargetDir)\dll"
+copy "$(TargetDir)\*.dll" "$(TargetDir)\dll\"
+del "$(TargetDir)\*.dll" /Q
 </PostBuildEvent>
   </PropertyGroup>
 </Project>

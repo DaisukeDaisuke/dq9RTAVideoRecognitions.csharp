@@ -66,7 +66,14 @@ namespace WindowsFormsApp1
 
         public bool updateText1()
         {
-            UpdateOutputText(FormatParseInput() + " " + BattleAction.updateText1(battleLog));
+            if (ActionIndex == 0)
+            {
+                UpdateOutputText(FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
+            }
+            else
+            {
+                UpdateOutputText(FormatParseInput() + " " + (TurnIndex + 1) + " " + BattleAction.updateText1(battleLog));
+            }
 
             return true;
         }
@@ -167,6 +174,8 @@ namespace WindowsFormsApp1
             }
         }
 
+        private bool ActionTaken = false;
+
         private async void ProcessState()
         {
             if (lastHit1 == "erugio.png"&&lastHit2 == "reset.png")
@@ -189,8 +198,10 @@ namespace WindowsFormsApp1
                     NeedDamage1Enabled = false;
                     NeedDamage1 = -1;
                     lastdamage1 = -1;
+                    ActionTaken = false;
                     UpdateOutputText("");
                     await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
+                    
 
                 }
                 return;
@@ -307,6 +318,7 @@ namespace WindowsFormsApp1
                 action = BattleAction.BUFF;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
             if(lastHit1 == "hadou.png")
             {
@@ -337,6 +349,7 @@ namespace WindowsFormsApp1
                 action = BattleAction.MAGIC_MIRROR;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
 
             if (lastHit1 == "erugio.png"&&lastHit2 == "attack.png")
@@ -352,6 +365,7 @@ namespace WindowsFormsApp1
                 action = BattleAction.MULTITHRUST;
                 NeedDamage2 = (ActionIndex << 12) | TurnIndex;
                 NeedDamage1 = -1;
+                ActionTaken = true;
             }
 
             if (lastHit1 == "no_hadou.png")
@@ -394,6 +408,7 @@ namespace WindowsFormsApp1
                 action = BattleAction.DOUBLE_UP;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
             if(lastHit1 == "meisou.png")
             {
@@ -417,12 +432,14 @@ namespace WindowsFormsApp1
                 action = BattleAction.FULLHEAL;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
             if(lastHit1 == "more_heal.png")
             {
                 action = BattleAction.MORE_HEAL;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
 
             if (lastHit1 == "defense_champion.png" &&lastHit2 == "defense_champion2.png")
@@ -430,6 +447,7 @@ namespace WindowsFormsApp1
                 action = BattleAction.DEFENDING_CHAMPION;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
 
             if(lastHit1 == "ayasii.png")
@@ -447,11 +465,12 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
             }
 
-            if(lastHit1 == "WakeUp.png"&&lastHit2 != "inori.png"&&ActionIndex != 0)
+            if(lastHit1 == "WakeUp.png"&&lastHit2 != "inori.png"&&ActionIndex != 0&&!ActionTaken)
             {
                 action = BattleAction.TURN_SKIPPED;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
 
             if (lastHit1 == "Paralysis.png") 
@@ -459,6 +478,7 @@ namespace WindowsFormsApp1
                 action = BattleAction.PARALYSIS;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
 
             if(lastHit1 == "sleeping2.png"&&lastHit2 == "" && lastHit3 == "")
@@ -466,6 +486,7 @@ namespace WindowsFormsApp1
                 action = BattleAction.SLEEPING;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
 
             if (lastHit1 == "sleeping2.png" && ( lastHit3 == "dead.png" || lastHit3 == "dead2.png"))
@@ -480,6 +501,7 @@ namespace WindowsFormsApp1
                 action = BattleAction.SONG;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
 
 
@@ -505,6 +527,7 @@ namespace WindowsFormsApp1
                 {
                     ActionIndex = 0;
                     TurnIndex++;
+                    ActionTaken = false;
                 }
             }
             else if(action != -1 && action == preAction)
@@ -557,7 +580,7 @@ namespace WindowsFormsApp1
 
         private bool isMinimized = false;
 
-        // フォームのサイズ変更イベントで呼び出すメソッド
+        // フォームのサイズ変更イベント
         private void Form1_Resize(object sender, EventArgs e)
         {
             if (this.WindowState == FormWindowState.Minimized)
@@ -566,14 +589,14 @@ namespace WindowsFormsApp1
             }
             else if (isMinimized && this.WindowState == FormWindowState.Normal)
             {
-                // 最小化から復元された場合にDataGridViewのサイズとカラム幅を再調整
                 isMinimized = false;
                 AdjustColumnWidths();
+                SaveSettings(); // ウィンドウサイズと設定を保存
             }
             else
             {
-                // 通常のサイズ変更時も追従するように再調整
                 AdjustColumnWidths();
+                SaveSettings(); // 通常のサイズ変更時も保存
             }
         }
 
@@ -1531,17 +1554,37 @@ namespace WindowsFormsApp1
         private const int TableOnlyVisibleBit = 1 << 1; // 2
         private const int ShowDebugBit = 1 << 2;      // 4
         private const int OutputVisibleBit = 1 << 3;   // 8
+                                                       // 設定ファイルからウィンドウサイズと設定を読み込み
+        private const int MinWidth = 300;
+        private const int MinHeight = 200;
+        private const int MaxSizeBits = 0x3FFF; // サイズ情報のビット幅
 
+        // 設定ファイルにウィンドウサイズと設定を保存
         private void SaveSettings()
         {
             int settings = 0;
 
+            // チェックボックスの設定をビットで保存
             if (TimeVisible.Checked) settings |= TimeVisibleBit;
             if (TableOnlyVisible.Checked) settings |= TableOnlyVisibleBit;
             if (showDebugCheckBox.Checked) settings |= ShowDebugBit;
             if (OutputVisible.Checked) settings |= OutputVisibleBit;
+            // ウィンドウサイズをビットにエンコード
 
-            File.WriteAllText(ConfigFileName, settings.ToString());
+            int width = this.Width < MinWidth ? MinWidth : this.Width;
+            int height = this.Height < MinHeight ? MinHeight : this.Height;
+            if (isMinimized)
+            {
+                width = 623;
+                height = 432;
+            }
+           
+            int encodedSize = ((width & MaxSizeBits) << 14) | (height & MaxSizeBits);
+
+            // 設定とサイズを1つの整数にまとめて保存
+            int combinedSettings = (settings & 0xF) | (encodedSize << 4); // 上位にサイズ情報
+
+            File.WriteAllText(ConfigFileName, combinedSettings.ToString());
         }
 
         private void LoadSettings()
@@ -1549,12 +1592,21 @@ namespace WindowsFormsApp1
             if (File.Exists(ConfigFileName))
             {
                 string fileContent = File.ReadAllText(ConfigFileName);
-                if (int.TryParse(fileContent, out int settings))
+                if (int.TryParse(fileContent, out int combinedSettings))
                 {
+                    // チェックボックスの設定
+                    int settings = combinedSettings & 0xF;
                     TimeVisible.Checked = (settings & TimeVisibleBit) != 0;
                     TableOnlyVisible.Checked = (settings & TableOnlyVisibleBit) != 0;
                     showDebugCheckBox.Checked = (settings & ShowDebugBit) != 0;
                     OutputVisible.Checked = (settings & OutputVisibleBit) != 0;
+
+                    // ウィンドウサイズの読み込み
+                    int encodedSize = (combinedSettings >> 4);
+                    int width = (encodedSize >> 14) & MaxSizeBits;
+                    int height = encodedSize & MaxSizeBits;
+                    this.Width = width < MinWidth ? MinWidth : width;
+                    this.Height = height < MinHeight ? MinHeight : height;
                 }
             }
             else
@@ -1567,13 +1619,12 @@ namespace WindowsFormsApp1
             }
         }
 
-
+        // フォームロード時に呼び出してサイズと設定を反映
         private void Form1_Load(object sender, EventArgs e)
         {
             LoadSettings();
             ReloadState();
         }
-
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
