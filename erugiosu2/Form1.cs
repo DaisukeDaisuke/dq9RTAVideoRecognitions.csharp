@@ -61,18 +61,25 @@ namespace WindowsFormsApp1
         string[] highestMatchImageNames = new string[3] { "", "", "" };
         private int marginX = 25;
         private int marginY = 205;
-
-
+        private bool flag = false;
+        
 
         public bool updateText1()
         {
-            if (ActionIndex == 0)
+            UpdateOutputText("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
+            //if (ActionIndex == 0)
+            //{
+            //    UpdateOutputText("b" + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
+            //}
+            //else
+            //{
+               
+            //}
+            if(TurnIndex == 5 && ActionIndex == 0 && !flag)
             {
-                UpdateOutputText(FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
-            }
-            else
-            {
-                UpdateOutputText(FormatParseInput() + " " + (TurnIndex + 1) + " " + BattleAction.updateText1(battleLog));
+                string test = ("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
+                _consoleManager.SendInput(test);
+                flag = true;
             }
 
             return true;
@@ -644,6 +651,10 @@ namespace WindowsFormsApp1
             }
         }
 
+        private CppConsoleManager _consoleManager;
+        private const string CppProgramPath = "resource\\cbe.exe"; // C++プログラムのパス
+        private ConsoleWindow _ConsoleWindow;
+
         // 出力エリアに動的にデータを追加するメソッド例
         private void UpdateOutputText(string data)
         {
@@ -716,6 +727,20 @@ namespace WindowsFormsApp1
 
             // テンプレート画像をキャッシュ
             LoadTemplatesToCache();
+
+            _consoleManager = new CppConsoleManager(CppProgramPath);
+            _consoleManager.OnOutputReceived += OnCppOutputReceived;
+
+            _ConsoleWindow = new ConsoleWindow();
+            _ConsoleWindow.Show();
+
+        }
+
+        private void OnCppOutputReceived(string obj)
+        {
+            Debug.WriteLine(obj);
+
+            _ConsoleWindow.AppendText(obj);
         }
 
         private void LoadTemplatesToCache()
@@ -1483,6 +1508,7 @@ namespace WindowsFormsApp1
             if (!TableOnlyVisible.Checked)
             {
                 copyButton.Visible = TimeVisible.Checked;
+                ConsoleButton.Visible = TimeVisible.Checked;
             }
 
             if (TableOnlyVisible.Checked)
@@ -1491,6 +1517,9 @@ namespace WindowsFormsApp1
                 InputTimer.Location = new Point(85, 10);
                 label2.Location = new Point(10, 14);
                 TimeVisible.Location = new Point(330, 12);
+                ConsoleButton.Location = new Point(210, 8);
+                ConsoleButton.Size = new Size(75, 27);
+                ConsoleButton.Visible = TimeVisible.Checked;
                 InputTimer.Visible = TimeVisible.Checked;
                 label2.Visible = TimeVisible.Checked;
                 copyButton.Visible = false;
@@ -1512,7 +1541,10 @@ namespace WindowsFormsApp1
                 //InputTimer.Visible = true;
                 InputTimer.Location = new Point(258, 24);
                 label2.Location = new Point(258, 9);
-                TimeVisible.Location = new Point(258, 138);
+                TimeVisible.Location = new Point(260, 154);
+                ConsoleButton.Location = new Point(296, 88);
+                ConsoleButton.Size = new Size(75, 38);
+                ConsoleButton.Visible = TimeVisible.Checked;
                 label2.Visible = TimeVisible.Checked;
                 copyButton.Visible = TimeVisible.Checked;
                 OutputVisible.Visible = true;
@@ -1633,6 +1665,30 @@ namespace WindowsFormsApp1
             SaveSettings();
             _timer.Stop();
             _capture.Dispose();
+            _consoleManager.Dispose();
+            _ConsoleWindow.Close();
+            _ConsoleWindow.Dispose();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (!_ConsoleWindow.ShowConsole())
+            {
+                if (TurnIndex >= 3)
+                {
+                    string test = ("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
+                    _consoleManager.SendInput(test);
+                }
+            }
+        }
+
+        internal void OnExit()
+        {
+            _timer.Stop();
+            _capture.Dispose();
+            _consoleManager.Dispose();
+            _ConsoleWindow.Close();
+            _ConsoleWindow.Dispose();
         }
     }
 }

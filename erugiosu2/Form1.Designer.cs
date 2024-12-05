@@ -41,6 +41,7 @@
             this.OutputVisible = new System.Windows.Forms.CheckBox();
             this.TableOnlyVisible = new System.Windows.Forms.CheckBox();
             this.TimeVisible = new System.Windows.Forms.CheckBox();
+            this.ConsoleButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
@@ -83,7 +84,7 @@
             // 
             this.copyButton.Location = new System.Drawing.Point(296, 50);
             this.copyButton.Name = "copyButton";
-            this.copyButton.Size = new System.Drawing.Size(75, 39);
+            this.copyButton.Size = new System.Drawing.Size(75, 32);
             this.copyButton.TabIndex = 14;
             this.copyButton.Text = "OutputCopy";
             this.copyButton.UseVisualStyleBackColor = true;
@@ -140,7 +141,7 @@
             // showDebugCheckBox
             // 
             this.showDebugCheckBox.AutoSize = true;
-            this.showDebugCheckBox.Location = new System.Drawing.Point(258, 176);
+            this.showDebugCheckBox.Location = new System.Drawing.Point(260, 176);
             this.showDebugCheckBox.Name = "showDebugCheckBox";
             this.showDebugCheckBox.Size = new System.Drawing.Size(91, 16);
             this.showDebugCheckBox.TabIndex = 20;
@@ -151,7 +152,7 @@
             // OutputVisible
             // 
             this.OutputVisible.AutoSize = true;
-            this.OutputVisible.Location = new System.Drawing.Point(258, 101);
+            this.OutputVisible.Location = new System.Drawing.Point(260, 132);
             this.OutputVisible.Name = "OutputVisible";
             this.OutputVisible.Size = new System.Drawing.Size(93, 16);
             this.OutputVisible.TabIndex = 21;
@@ -173,7 +174,7 @@
             // TimeVisible
             // 
             this.TimeVisible.AutoSize = true;
-            this.TimeVisible.Location = new System.Drawing.Point(258, 138);
+            this.TimeVisible.Location = new System.Drawing.Point(260, 154);
             this.TimeVisible.Name = "TimeVisible";
             this.TimeVisible.Size = new System.Drawing.Size(84, 16);
             this.TimeVisible.TabIndex = 23;
@@ -181,11 +182,22 @@
             this.TimeVisible.UseVisualStyleBackColor = true;
             this.TimeVisible.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged_1);
             // 
+            // ConsoleButton
+            // 
+            this.ConsoleButton.Location = new System.Drawing.Point(296, 88);
+            this.ConsoleButton.Name = "ConsoleButton";
+            this.ConsoleButton.Size = new System.Drawing.Size(75, 38);
+            this.ConsoleButton.TabIndex = 24;
+            this.ConsoleButton.Text = "Console";
+            this.ConsoleButton.UseVisualStyleBackColor = true;
+            this.ConsoleButton.Click += new System.EventHandler(this.button1_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(607, 393);
+            this.ClientSize = new System.Drawing.Size(614, 393);
+            this.Controls.Add(this.ConsoleButton);
             this.Controls.Add(this.TimeVisible);
             this.Controls.Add(this.TableOnlyVisible);
             this.Controls.Add(this.OutputVisible);
@@ -225,6 +237,7 @@
         private System.Windows.Forms.CheckBox OutputVisible;
         private System.Windows.Forms.CheckBox TableOnlyVisible;
         private System.Windows.Forms.CheckBox TimeVisible;
+        private System.Windows.Forms.Button ConsoleButton;
     }
 }
 

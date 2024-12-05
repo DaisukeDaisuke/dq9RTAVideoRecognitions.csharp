@@ -10,8 +10,10 @@ using WindowsFormsApp1;
 
 namespace erugiosu2
 {
+   
     internal static class Program
     {
+        private static Form1 form = null;
         /// <summary>
         /// アプリケーションのメイン エントリ ポイントです。
         /// </summary>
@@ -29,10 +31,12 @@ namespace erugiosu2
 
             // AssemblyResolveイベントを設定
             AppDomain.CurrentDomain.AssemblyResolve += OnResolveAssembly;
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+            AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(form = new Form1());
         }
 
         // DLLフォルダからアセンブリを読み込むイベントハンドラ
@@ -66,5 +70,14 @@ namespace erugiosu2
             }
         }
 
+        private static void OnProcessExit(object sender, EventArgs e)
+        {
+            form.OnExit();
+        }
+
+        private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            form.OnExit();
+        }
     }
 }

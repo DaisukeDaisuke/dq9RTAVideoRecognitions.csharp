@@ -68,6 +68,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BattleAction.cs" />
+    <Compile Include="ConsoleWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="CppConsoleManager.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -77,6 +81,9 @@
     <Compile Include="LiveSplitPipeClient.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="ConsoleWindow.resx">
+      <DependentUpon>ConsoleWindow.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
@@ -128,7 +135,6 @@
     <PostBuildEvent>xcopy /E /I /Y "$(ProjectDir)resource" "$(TargetDir)resource"
 if not exist "$(TargetDir)\dll" mkdir "$(TargetDir)\dll"
 copy "$(TargetDir)\*.dll" "$(TargetDir)\dll\"
-del "$(TargetDir)\*.dll" /Q
-</PostBuildEvent>
+del "$(TargetDir)\*.dll" /Q</PostBuildEvent>
   </PropertyGroup>
 </Project>
