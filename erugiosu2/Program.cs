@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WindowsFormsApp1;
@@ -17,6 +18,14 @@ namespace erugiosu2
         [STAThread]
         static void Main()
         {
+
+            // 管理者権限チェック
+            if (IsAdministrator())
+            {
+                MessageBox.Show("アプリケーションを管理者権限で実行しないでください。dllフォルダにある画像認識で使われる大量の依存関係が管理者権限で安全かどうか保証できません。この保護を無効化するには作者に問い合わせてください。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Environment.Exit(1); // エラーメッセージを表示して終了
+                return;
+            }
 
             // AssemblyResolveイベントを設定
             AppDomain.CurrentDomain.AssemblyResolve += OnResolveAssembly;
@@ -45,5 +54,17 @@ namespace erugiosu2
             }
             return null; // DLLが見つからない場合
         }
+
+
+        // 管理者権限で実行されているか確認
+        private static bool IsAdministrator()
+        {
+            using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+            {
+                WindowsPrincipal principal = new WindowsPrincipal(identity);
+                return principal.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+        }
+
     }
 }

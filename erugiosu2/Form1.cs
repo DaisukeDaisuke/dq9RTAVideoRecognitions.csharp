@@ -1057,7 +1057,7 @@ namespace WindowsFormsApp1
 
                         if (frameCounter % 2 == 0)
                         {
-                            SaveMatAsImage(trimmed, 1);
+                            //SaveMatAsImage(trimmed, 1);
                             //pictureBox4.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
                         }
                     }
@@ -1204,12 +1204,14 @@ namespace WindowsFormsApp1
 
         public void SaveMatAsImage(Mat trimmed, int i)
         {
+#if DEBUG
             // MatからBitmapへ変換
             using (Bitmap bmp = trimmed.ToBitmap())
             {
                 // 画像をPNG形式で保存
                 bmp.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", ImageFormat.Png);
             }
+#endif
         }
 
 
