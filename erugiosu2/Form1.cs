@@ -224,7 +224,7 @@ namespace WindowsFormsApp1
             int damageTest2 = ConvertMatchResults(matchResults2);
            if (NeedDamage1 != -1&& NeedDamage1Enabled || lastdamage1 < damageTest1)
             {
-                if (lastHit1 == "guard.png" || lastHit1 == "miss.png" || lastHit1 == "miss2.png")
+                if (lastHit1 == "guard.png" || lastHit1 == "miss.png" || lastHit1 == "miss2.png" || lastHit1 == "mikawasi.png")
                 {
                     int turnind = NeedDamage1 & 0xfff;
                     int actionid = (NeedDamage1 >> 12) & 0xf;
@@ -268,7 +268,7 @@ namespace WindowsFormsApp1
                 }
             }*/else if ((NeedDamage2 != -1&& NeedDamage2Enabled) || lastdamage2 < damageTest2)
             {
-                if (lastHit1 == "guard.png"||lastHit1 == "miss.png"||lastHit1 == "miss2.png")
+                if (lastHit1 == "guard.png"||lastHit1 == "miss.png"||lastHit1 == "miss2.png" || lastHit1 == "mikawasi.png")
                 {
                     int turnind = NeedDamage2 & 0xfff;
                     int actionind = (NeedDamage2 >> 12) & 0xf;
