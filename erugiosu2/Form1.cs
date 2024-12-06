@@ -172,7 +172,7 @@ namespace WindowsFormsApp1
         }
 
         private bool ActionTaken = false;
-
+        private bool Sleeping = false;
         private async void ProcessState()
         {
             if (lastHit1 == "erugio.png"&&lastHit2 == "reset.png")
@@ -197,6 +197,7 @@ namespace WindowsFormsApp1
                     lastdamage1 = -1;
                     ActionTaken = false;
                     flag = false;
+                    Sleeping = false;
                     UpdateOutputText("");
                     await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
                     
@@ -453,6 +454,7 @@ namespace WindowsFormsApp1
                 action = BattleAction.LULLAB_EYE;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                Sleeping = true;
             }
 
 
@@ -463,12 +465,21 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
             }
 
-            if(lastHit1 == "WakeUp.png"&&lastHit2 != "inori.png"&&ActionIndex != 0&&!ActionTaken)
+            if (Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex != 0 && !ActionTaken)
             {
                 action = BattleAction.TURN_SKIPPED;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
                 ActionTaken = true;
+                Sleeping = false;
+            }
+            else if (Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex == 0 && !ActionTaken)
+            {
+                action = BattleAction.CURE_SLEEPING;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+                ActionTaken = true;
+                Sleeping = false;
             }
 
             if (lastHit1 == "Paralysis.png") 
@@ -485,6 +496,7 @@ namespace WindowsFormsApp1
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
                 ActionTaken = true;
+                Sleeping = true;
             }
 
             if (lastHit1 == "sleeping2.png" && ( lastHit3 == "dead.png" || lastHit3 == "dead2.png"))
@@ -531,6 +543,17 @@ namespace WindowsFormsApp1
             else if(action != -1 && action == preAction)
             {
                 LastDetection = DateTime.Now;
+                if (ActionIndex == 0)
+                {
+                    ActionTaken = false;
+                }
+            }
+            else
+            {
+                if (ActionIndex == 0)
+                {
+                    ActionTaken = false;
+                }
             }
 
             DateTime currentTime = DateTime.Now;
