@@ -162,6 +162,11 @@ namespace WindowsFormsApp1
 
                 dataGridView1.Rows[participantId].Cells[actionIndex * 2 + 2].Value = damage;
 
+                if (participantId >= 4 && actionIndex == 2 && !flag)
+                {
+                    runSearch();
+                }
+
                 updateText1();
             }
         }
@@ -518,10 +523,6 @@ namespace WindowsFormsApp1
                 ActionIndex++;
                 if (ActionIndex == 3)
                 {
-                    if(maybeCritical == -1&&TurnIndex >= 4&&!flag)
-                    {
-                        runSearch();
-                    }
                     ActionIndex = 0;
                     TurnIndex++;
                     ActionTaken = false;

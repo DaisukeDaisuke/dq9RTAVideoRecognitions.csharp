@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -17,7 +14,7 @@ namespace erugiosu2
         private bool _isDisposed = false;
 
         public bool IsRunning => _process != null && !_process.HasExited;
-
+        
         public CppConsoleManager(string exePath)
         {
             if (!File.Exists(exePath))
