@@ -44,10 +44,10 @@ jobs:
         working-directory: dq9RTAVideoRecognitions
         run: |
           $publishDir = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/bin/Release/net6.0-windows/win-x64/publish"
-          $outputZip = "${{github.workspace}}/erugiosu2.zip"
+          $outputZip = "${{github.workspace}}/erugiosu2.7z"
           & "C:\Program Files\7-Zip\7z.exe" a -t7z $outputZip $publishDir/*
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: PublishedFiles
-          path: "${{github.workspace}}/erugiosu2.zip"
+          path: "${{github.workspace}}/erugiosu2.7z"
