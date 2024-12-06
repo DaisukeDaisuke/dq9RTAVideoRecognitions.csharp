@@ -29,21 +29,23 @@ jobs:
         working-directory: dq9BattleEmulatorCollection
         run: cmake --build ./build --config ${{env.BUILD_TYPE}}
       - name: Move the executable file
+        working-directory: dq9BattleEmulatorCollection
         run: |
           # Move the back-end program
-          $source = "${{github.workspace}}/dq9BattleEmulatorCollection/${{env.BUILD_TYPE}}/newDirectory.exe"
-          $destination = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/resource/cbe.exe"
+          $source = "./${{env.BUILD_TYPE}}/newDirectory.exe"
+          $destination = "../dq9RTAVideoRecognitions/erugiosu2/resource/cbe.exe"
           Rename-Item -Path $source -NewName $destination
       - name: Build C#
         working-directory: dq9RTAVideoRecognitions
         run: dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
       - name: Compress the publish directory
+        working-directory: dq9RTAVideoRecognitions
         run: |
-          $publishDir = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/bin/Release/net6.0-windows/win-x64/publish"
-          $outputZip = "${{github.workspace}}/erugiosu2.zip"
+          $publishDir = "./erugiosu2/bin/Release/net6.0-windows/win-x64/publish"
+          $outputZip = "./erugiosu2.zip"
           Compress-Archive -Path "$publishDir/*" -DestinationPath $outputZip
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: PublishedFiles
-          path: "${{github.workspace}}/erugiosu2.zip"
+          path: "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2.zip"
