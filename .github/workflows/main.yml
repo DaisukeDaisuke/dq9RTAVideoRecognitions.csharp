@@ -32,7 +32,7 @@ jobs:
         working-directory: dq9BattleEmulatorCollection
         run: |
           # Move the back-end program
-          $source = "./${{env.BUILD_TYPE}}/build/newDirectory.exe"
+          $source = "./build/${{env.BUILD_TYPE}}/newDirectory.exe"
           $destination = "../dq9RTAVideoRecognitions/erugiosu2/resource/cbe.exe"
           Rename-Item -Path $source -NewName $destination
       - name: Build C#
