@@ -3,14 +3,9 @@ using Emgu.CV.Structure;
 using Emgu.CV;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
-using Emgu.CV.Reg;
-using Emgu.CV.ML;
-using Emgu.CV.ML.MlEnum;
 using Hompus.VideoInputDevices;
 using System.Text.RegularExpressions;
 using System.Linq;
@@ -19,8 +14,6 @@ using erugiosu2;
 using System.Drawing.Imaging;
 using System.Threading.Tasks;
 using System.Text;
-using System.Reflection.Emit;
-using System.Drawing.Printing;
 
 namespace WindowsFormsApp1
 {
@@ -67,22 +60,14 @@ namespace WindowsFormsApp1
         public bool updateText1()
         {
             UpdateOutputText("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
-            //if (ActionIndex == 0)
-            //{
-            //    UpdateOutputText("b" + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
-            //}
-            //else
-            //{
-               
-            //}
-            if(TurnIndex == 5 && ActionIndex == 0 && !flag)
-            {
-                string test = ("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
-                _consoleManager.SendInput(test);
-                flag = true;
-            }
-
             return true;
+        }
+
+        public void runSearch()
+        {
+            string test = ("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
+            _consoleManager.SendInput(test);
+            flag = true;
         }
 
         public int ConvertMatchResults(int[] matchResults)
@@ -206,6 +191,7 @@ namespace WindowsFormsApp1
                     NeedDamage1 = -1;
                     lastdamage1 = -1;
                     ActionTaken = false;
+                    flag = false;
                     UpdateOutputText("");
                     await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
                     
@@ -532,6 +518,10 @@ namespace WindowsFormsApp1
                 ActionIndex++;
                 if (ActionIndex == 3)
                 {
+                    if(maybeCritical == -1&&TurnIndex >= 4&&!flag)
+                    {
+                        runSearch();
+                    }
                     ActionIndex = 0;
                     TurnIndex++;
                     ActionTaken = false;
@@ -1573,7 +1563,7 @@ namespace WindowsFormsApp1
                 DebugTextBox.Visible = showDebugCheckBox.Checked;
                 DebugLabel.Visible = showDebugCheckBox.Checked;
                 marginX = 25;
-                marginY = 205;
+                marginY = 255;
                 dataGridView1.Location = new Point(14, 248);
             }
 
@@ -1695,8 +1685,7 @@ namespace WindowsFormsApp1
             {
                 if (TurnIndex >= 3)
                 {
-                    string test = ("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
-                    _consoleManager.SendInput(test);
+                    runSearch();
                 }
             }
         }
