@@ -692,14 +692,37 @@ namespace WindowsFormsApp1
                 var devices = sde.ListVideoInputDevice(); // 例: Dictionary<int, string>
 
                 // "OBS Virtual Camera" に一致するインデックスを取得
-                int obsCameraIndex = devices
-                    .FirstOrDefault(d => d.Value == "OBS Virtual Camera").Key;
+                try
+                {
+                    int obsCameraIndex = devices
+                        .FirstOrDefault(d => d.Value == "OBS Virtual Camera").Key;
+                    if (obsCameraIndex == default(int) && !devices.ContainsKey(obsCameraIndex))
+                    {
+                        // カメラが見つからない場合に警告ポップアップを表示
 
-                if (obsCameraIndex == default(int) && !devices.ContainsKey(obsCameraIndex))
+                        MessageBox.Show("OBS Virtual Camera が見つかりません。プログラムを終了します。",
+                                      "警告",
+                                      MessageBoxButtons.OK,
+                                      MessageBoxIcon.Warning);
+
+
+                        // プログラムを終了
+                        Environment.Exit(0);
+                        return;
+                    }
+
+                    // カメラ初期化
+                    _capture = new VideoCapture(obsCameraIndex);
+                    _capture.Set(CapProp.FrameWidth, 1920);
+                    _capture.Set(CapProp.FrameHeight, 1080);
+
+                    Console.WriteLine($"OBS Virtual Camera Index: {obsCameraIndex}");
+                }
+                catch
                 {
                     // カメラが見つからない場合に警告ポップアップを表示
 
-                    MessageBox.Show("OBS Virtual Camera が見つかりません。プログラムを終了します。",
+                    MessageBox.Show("OBS Virtual Camera が見つかりません。プログラムを終了します(コンピーターにカメラが1つも接続されていません)",
                                   "警告",
                                   MessageBoxButtons.OK,
                                   MessageBoxIcon.Warning);
@@ -709,13 +732,6 @@ namespace WindowsFormsApp1
                     Environment.Exit(0);
                     return;
                 }
-
-                // カメラ初期化
-                _capture = new VideoCapture(obsCameraIndex);
-                _capture.Set(CapProp.FrameWidth, 1920);
-                _capture.Set(CapProp.FrameHeight, 1080);
-
-                Console.WriteLine($"OBS Virtual Camera Index: {obsCameraIndex}");
             }
 
             // タイマー設定（5fps）
@@ -740,7 +756,10 @@ namespace WindowsFormsApp1
         {
             Debug.WriteLine(obj);
 
-            _ConsoleWindow.AppendText(obj);
+            if (_ConsoleWindow != null)
+            {
+                _ConsoleWindow.AppendText(obj);
+            }
         }
 
         private void LoadTemplatesToCache()
@@ -1517,7 +1536,7 @@ namespace WindowsFormsApp1
                 InputTimer.Location = new Point(85, 10);
                 label2.Location = new Point(10, 14);
                 TimeVisible.Location = new Point(330, 12);
-                ConsoleButton.Location = new Point(210, 8);
+                ConsoleButton.Location = new Point(230, 8);
                 ConsoleButton.Size = new Size(75, 27);
                 ConsoleButton.Visible = TimeVisible.Checked;
                 InputTimer.Visible = TimeVisible.Checked;
@@ -1539,11 +1558,11 @@ namespace WindowsFormsApp1
             {
                 pictureBox1.Visible = true;
                 //InputTimer.Visible = true;
-                InputTimer.Location = new Point(258, 24);
-                label2.Location = new Point(258, 9);
-                TimeVisible.Location = new Point(260, 154);
-                ConsoleButton.Location = new Point(296, 88);
-                ConsoleButton.Size = new Size(75, 38);
+                InputTimer.Location = new Point(299, 30);
+                label2.Location = new Point(299, 9);
+                TimeVisible.Location = new Point(301, 193);
+                ConsoleButton.Location = new Point(344, 110);
+                ConsoleButton.Size = new Size(88, 48);
                 ConsoleButton.Visible = TimeVisible.Checked;
                 label2.Visible = TimeVisible.Checked;
                 copyButton.Visible = TimeVisible.Checked;
@@ -1555,7 +1574,7 @@ namespace WindowsFormsApp1
                 DebugLabel.Visible = showDebugCheckBox.Checked;
                 marginX = 25;
                 marginY = 205;
-                dataGridView1.Location = new Point(12, 198);
+                dataGridView1.Location = new Point(14, 248);
             }
 
 
@@ -1684,11 +1703,14 @@ namespace WindowsFormsApp1
 
         internal void OnExit()
         {
-            _timer.Stop();
-            _capture.Dispose();
-            _consoleManager.Dispose();
-            _ConsoleWindow.Close();
-            _ConsoleWindow.Dispose();
+            if (_timer != null) _timer.Stop();
+            if (_capture != null) _capture.Dispose();
+            if (_consoleManager != null) _consoleManager.Dispose();
+            if (_ConsoleWindow != null)
+            {
+                _ConsoleWindow.Close();
+                _ConsoleWindow.Dispose();
+            }
         }
     }
 }

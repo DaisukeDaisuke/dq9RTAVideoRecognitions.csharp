@@ -28,198 +28,212 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.outputTextBox = new System.Windows.Forms.TextBox();
-            this.copyButton = new System.Windows.Forms.Button();
-            this.OutputLabel = new System.Windows.Forms.Label();
-            this.InputTimer = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.DebugTextBox = new System.Windows.Forms.TextBox();
-            this.DebugLabel = new System.Windows.Forms.Label();
-            this.showDebugCheckBox = new System.Windows.Forms.CheckBox();
-            this.OutputVisible = new System.Windows.Forms.CheckBox();
-            this.TableOnlyVisible = new System.Windows.Forms.CheckBox();
-            this.TimeVisible = new System.Windows.Forms.CheckBox();
-            this.ConsoleButton = new System.Windows.Forms.Button();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
-            this.SuspendLayout();
+            pictureBox1 = new System.Windows.Forms.PictureBox();
+            dataGridView1 = new System.Windows.Forms.DataGridView();
+            outputTextBox = new System.Windows.Forms.TextBox();
+            copyButton = new System.Windows.Forms.Button();
+            OutputLabel = new System.Windows.Forms.Label();
+            InputTimer = new System.Windows.Forms.TextBox();
+            label2 = new System.Windows.Forms.Label();
+            DebugTextBox = new System.Windows.Forms.TextBox();
+            DebugLabel = new System.Windows.Forms.Label();
+            showDebugCheckBox = new System.Windows.Forms.CheckBox();
+            OutputVisible = new System.Windows.Forms.CheckBox();
+            TableOnlyVisible = new System.Windows.Forms.CheckBox();
+            TimeVisible = new System.Windows.Forms.CheckBox();
+            ConsoleButton = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
+            SuspendLayout();
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(12, 12);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(240, 180);
-            this.pictureBox1.TabIndex = 0;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            pictureBox1.Location = new System.Drawing.Point(14, 15);
+            pictureBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new System.Drawing.Size(280, 225);
+            pictureBox1.TabIndex = 0;
+            pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
             // 
             // dataGridView1
             // 
-            this.dataGridView1.AllowUserToAddRows = false;
-            this.dataGridView1.AllowUserToDeleteRows = false;
-            this.dataGridView1.AllowUserToResizeColumns = false;
-            this.dataGridView1.AllowUserToResizeRows = false;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(12, 198);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.ReadOnly = true;
-            this.dataGridView1.RowTemplate.Height = 21;
-            this.dataGridView1.Size = new System.Drawing.Size(560, 186);
-            this.dataGridView1.TabIndex = 10;
-            this.dataGridView1.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridView1_CellContentClick);
+            dataGridView1.AllowUserToAddRows = false;
+            dataGridView1.AllowUserToDeleteRows = false;
+            dataGridView1.AllowUserToResizeColumns = false;
+            dataGridView1.AllowUserToResizeRows = false;
+            dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView1.Location = new System.Drawing.Point(14, 248);
+            dataGridView1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            dataGridView1.Name = "dataGridView1";
+            dataGridView1.ReadOnly = true;
+            dataGridView1.RowTemplate.Height = 21;
+            dataGridView1.Size = new System.Drawing.Size(653, 232);
+            dataGridView1.TabIndex = 10;
+            dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             // 
             // outputTextBox
             // 
-            this.outputTextBox.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.outputTextBox.Location = new System.Drawing.Point(377, 33);
-            this.outputTextBox.Multiline = true;
-            this.outputTextBox.Name = "outputTextBox";
-            this.outputTextBox.ReadOnly = true;
-            this.outputTextBox.Size = new System.Drawing.Size(218, 65);
-            this.outputTextBox.TabIndex = 13;
+            outputTextBox.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            outputTextBox.Location = new System.Drawing.Point(438, 42);
+            outputTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            outputTextBox.Multiline = true;
+            outputTextBox.Name = "outputTextBox";
+            outputTextBox.ReadOnly = true;
+            outputTextBox.Size = new System.Drawing.Size(254, 80);
+            outputTextBox.TabIndex = 13;
             // 
             // copyButton
             // 
-            this.copyButton.Location = new System.Drawing.Point(296, 50);
-            this.copyButton.Name = "copyButton";
-            this.copyButton.Size = new System.Drawing.Size(75, 32);
-            this.copyButton.TabIndex = 14;
-            this.copyButton.Text = "OutputCopy";
-            this.copyButton.UseVisualStyleBackColor = true;
-            this.copyButton.Click += new System.EventHandler(this.copyButton_Click_1);
+            copyButton.Location = new System.Drawing.Point(344, 61);
+            copyButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            copyButton.Name = "copyButton";
+            copyButton.Size = new System.Drawing.Size(88, 40);
+            copyButton.TabIndex = 14;
+            copyButton.Text = "OutputCopy";
+            copyButton.UseVisualStyleBackColor = true;
+            copyButton.Click += copyButton_Click_1;
             // 
             // OutputLabel
             // 
-            this.OutputLabel.AutoSize = true;
-            this.OutputLabel.Location = new System.Drawing.Point(375, 18);
-            this.OutputLabel.Name = "OutputLabel";
-            this.OutputLabel.Size = new System.Drawing.Size(39, 12);
-            this.OutputLabel.TabIndex = 15;
-            this.OutputLabel.Text = "Output";
-            this.OutputLabel.Click += new System.EventHandler(this.label1_Click);
+            OutputLabel.AutoSize = true;
+            OutputLabel.Location = new System.Drawing.Point(438, 22);
+            OutputLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            OutputLabel.Name = "OutputLabel";
+            OutputLabel.Size = new System.Drawing.Size(45, 15);
+            OutputLabel.TabIndex = 15;
+            OutputLabel.Text = "Output";
+            OutputLabel.Click += label1_Click;
             // 
             // InputTimer
             // 
-            this.InputTimer.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.InputTimer.Location = new System.Drawing.Point(258, 24);
-            this.InputTimer.Name = "InputTimer";
-            this.InputTimer.Size = new System.Drawing.Size(113, 19);
-            this.InputTimer.TabIndex = 16;
+            InputTimer.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            InputTimer.Location = new System.Drawing.Point(299, 30);
+            InputTimer.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            InputTimer.Name = "InputTimer";
+            InputTimer.Size = new System.Drawing.Size(131, 23);
+            InputTimer.TabIndex = 16;
             // 
             // label2
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(258, 9);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(71, 12);
-            this.label2.TabIndex = 17;
-            this.label2.Text = "Timer(h m s)";
-            this.label2.Click += new System.EventHandler(this.label2_Click);
+            label2.AutoSize = true;
+            label2.Location = new System.Drawing.Point(299, 9);
+            label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            label2.Name = "label2";
+            label2.Size = new System.Drawing.Size(72, 15);
+            label2.TabIndex = 17;
+            label2.Text = "Timer(h m s)";
+            label2.Click += label2_Click;
             // 
             // DebugTextBox
             // 
-            this.DebugTextBox.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.DebugTextBox.Location = new System.Drawing.Point(377, 116);
-            this.DebugTextBox.Multiline = true;
-            this.DebugTextBox.Name = "DebugTextBox";
-            this.DebugTextBox.ReadOnly = true;
-            this.DebugTextBox.Size = new System.Drawing.Size(218, 76);
-            this.DebugTextBox.TabIndex = 18;
+            DebugTextBox.BackColor = System.Drawing.SystemColors.ControlLightLight;
+            DebugTextBox.Location = new System.Drawing.Point(440, 145);
+            DebugTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            DebugTextBox.Multiline = true;
+            DebugTextBox.Name = "DebugTextBox";
+            DebugTextBox.ReadOnly = true;
+            DebugTextBox.Size = new System.Drawing.Size(254, 94);
+            DebugTextBox.TabIndex = 18;
             // 
             // DebugLabel
             // 
-            this.DebugLabel.AutoSize = true;
-            this.DebugLabel.Location = new System.Drawing.Point(375, 101);
-            this.DebugLabel.Name = "DebugLabel";
-            this.DebugLabel.Size = new System.Drawing.Size(37, 12);
-            this.DebugLabel.TabIndex = 19;
-            this.DebugLabel.Text = "Debug";
-            this.DebugLabel.Click += new System.EventHandler(this.label3_Click);
+            DebugLabel.AutoSize = true;
+            DebugLabel.Location = new System.Drawing.Point(438, 127);
+            DebugLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            DebugLabel.Name = "DebugLabel";
+            DebugLabel.Size = new System.Drawing.Size(42, 15);
+            DebugLabel.TabIndex = 19;
+            DebugLabel.Text = "Debug";
+            DebugLabel.Click += label3_Click;
             // 
             // showDebugCheckBox
             // 
-            this.showDebugCheckBox.AutoSize = true;
-            this.showDebugCheckBox.Location = new System.Drawing.Point(260, 176);
-            this.showDebugCheckBox.Name = "showDebugCheckBox";
-            this.showDebugCheckBox.Size = new System.Drawing.Size(91, 16);
-            this.showDebugCheckBox.TabIndex = 20;
-            this.showDebugCheckBox.Text = "DebugVisible";
-            this.showDebugCheckBox.UseVisualStyleBackColor = true;
-            this.showDebugCheckBox.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            showDebugCheckBox.AutoSize = true;
+            showDebugCheckBox.Location = new System.Drawing.Point(301, 221);
+            showDebugCheckBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            showDebugCheckBox.Name = "showDebugCheckBox";
+            showDebugCheckBox.Size = new System.Drawing.Size(95, 19);
+            showDebugCheckBox.TabIndex = 20;
+            showDebugCheckBox.Text = "DebugVisible";
+            showDebugCheckBox.UseVisualStyleBackColor = true;
+            showDebugCheckBox.CheckedChanged += checkBox1_CheckedChanged;
             // 
             // OutputVisible
             // 
-            this.OutputVisible.AutoSize = true;
-            this.OutputVisible.Location = new System.Drawing.Point(260, 132);
-            this.OutputVisible.Name = "OutputVisible";
-            this.OutputVisible.Size = new System.Drawing.Size(93, 16);
-            this.OutputVisible.TabIndex = 21;
-            this.OutputVisible.Text = "OutputVisible";
-            this.OutputVisible.UseVisualStyleBackColor = true;
-            this.OutputVisible.CheckedChanged += new System.EventHandler(this.OutputVisible_CheckedChanged);
+            OutputVisible.AutoSize = true;
+            OutputVisible.Location = new System.Drawing.Point(302, 166);
+            OutputVisible.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            OutputVisible.Name = "OutputVisible";
+            OutputVisible.Size = new System.Drawing.Size(98, 19);
+            OutputVisible.TabIndex = 21;
+            OutputVisible.Text = "OutputVisible";
+            OutputVisible.UseVisualStyleBackColor = true;
+            OutputVisible.CheckedChanged += OutputVisible_CheckedChanged;
             // 
             // TableOnlyVisible
             // 
-            this.TableOnlyVisible.AutoSize = true;
-            this.TableOnlyVisible.Location = new System.Drawing.Point(420, 12);
-            this.TableOnlyVisible.Name = "TableOnlyVisible";
-            this.TableOnlyVisible.Size = new System.Drawing.Size(75, 16);
-            this.TableOnlyVisible.TabIndex = 22;
-            this.TableOnlyVisible.Text = "TableOnly";
-            this.TableOnlyVisible.UseVisualStyleBackColor = true;
-            this.TableOnlyVisible.CheckedChanged += new System.EventHandler(this.TimerVisible_CheckedChanged);
+            TableOnlyVisible.AutoSize = true;
+            TableOnlyVisible.Location = new System.Drawing.Point(491, 14);
+            TableOnlyVisible.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            TableOnlyVisible.Name = "TableOnlyVisible";
+            TableOnlyVisible.Size = new System.Drawing.Size(78, 19);
+            TableOnlyVisible.TabIndex = 22;
+            TableOnlyVisible.Text = "TableOnly";
+            TableOnlyVisible.UseVisualStyleBackColor = true;
+            TableOnlyVisible.CheckedChanged += TimerVisible_CheckedChanged;
             // 
             // TimeVisible
             // 
-            this.TimeVisible.AutoSize = true;
-            this.TimeVisible.Location = new System.Drawing.Point(260, 154);
-            this.TimeVisible.Name = "TimeVisible";
-            this.TimeVisible.Size = new System.Drawing.Size(84, 16);
-            this.TimeVisible.TabIndex = 23;
-            this.TimeVisible.Text = "TimeVisible";
-            this.TimeVisible.UseVisualStyleBackColor = true;
-            this.TimeVisible.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged_1);
+            TimeVisible.AutoSize = true;
+            TimeVisible.Location = new System.Drawing.Point(301, 193);
+            TimeVisible.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            TimeVisible.Name = "TimeVisible";
+            TimeVisible.Size = new System.Drawing.Size(85, 19);
+            TimeVisible.TabIndex = 23;
+            TimeVisible.Text = "TimeVisible";
+            TimeVisible.UseVisualStyleBackColor = true;
+            TimeVisible.CheckedChanged += checkBox1_CheckedChanged_1;
             // 
             // ConsoleButton
             // 
-            this.ConsoleButton.Location = new System.Drawing.Point(296, 88);
-            this.ConsoleButton.Name = "ConsoleButton";
-            this.ConsoleButton.Size = new System.Drawing.Size(75, 38);
-            this.ConsoleButton.TabIndex = 24;
-            this.ConsoleButton.Text = "Console";
-            this.ConsoleButton.UseVisualStyleBackColor = true;
-            this.ConsoleButton.Click += new System.EventHandler(this.button1_Click);
+            ConsoleButton.Location = new System.Drawing.Point(344, 110);
+            ConsoleButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            ConsoleButton.Name = "ConsoleButton";
+            ConsoleButton.Size = new System.Drawing.Size(88, 48);
+            ConsoleButton.TabIndex = 24;
+            ConsoleButton.Text = "Console";
+            ConsoleButton.UseVisualStyleBackColor = true;
+            ConsoleButton.Click += button1_Click;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(614, 393);
-            this.Controls.Add(this.ConsoleButton);
-            this.Controls.Add(this.TimeVisible);
-            this.Controls.Add(this.TableOnlyVisible);
-            this.Controls.Add(this.OutputVisible);
-            this.Controls.Add(this.showDebugCheckBox);
-            this.Controls.Add(this.DebugLabel);
-            this.Controls.Add(this.DebugTextBox);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.InputTimer);
-            this.Controls.Add(this.OutputLabel);
-            this.Controls.Add(this.copyButton);
-            this.Controls.Add(this.outputTextBox);
-            this.Controls.Add(this.dataGridView1);
-            this.Controls.Add(this.pictureBox1);
-            this.Name = "Form1";
-            this.Text = "Form1";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
-            this.Load += new System.EventHandler(this.Form1_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            ClientSize = new System.Drawing.Size(716, 491);
+            Controls.Add(ConsoleButton);
+            Controls.Add(TimeVisible);
+            Controls.Add(TableOnlyVisible);
+            Controls.Add(OutputVisible);
+            Controls.Add(showDebugCheckBox);
+            Controls.Add(DebugLabel);
+            Controls.Add(DebugTextBox);
+            Controls.Add(label2);
+            Controls.Add(InputTimer);
+            Controls.Add(OutputLabel);
+            Controls.Add(copyButton);
+            Controls.Add(outputTextBox);
+            Controls.Add(dataGridView1);
+            Controls.Add(pictureBox1);
+            Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            Name = "Form1";
+            Text = "Form1";
+            FormClosing += Form1_FormClosing;
+            Load += Form1_Load;
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
