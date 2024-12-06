@@ -29,23 +29,25 @@ jobs:
         working-directory: dq9BattleEmulatorCollection
         run: cmake --build ./build --config ${{env.BUILD_TYPE}}
       - name: Move the executable file
-        working-directory: dq9BattleEmulatorCollection
         run: |
           # Move the back-end program
-          $source = "./build/${{env.BUILD_TYPE}}/newDirectory.exe"
-          $destination = "../dq9RTAVideoRecognitions/erugiosu2/resource/cbe.exe"
-          Rename-Item -Path $source -NewName $destination
+          $source = "${{github.workspace}}/dq9BattleEmulatorCollection/build/${{env.BUILD_TYPE}}/newDirectory.exe"
+          $destination = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/resource/cbe.exe"
+          Move-Item -Path $source -Destination $destination -Force
       - name: Build C#
         working-directory: dq9RTAVideoRecognitions
         run: dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
-      - name: Compress the publish directory
+      - name: Install 7-Zip
+        run: |
+          choco install 7zip -y
+      - name: Compress files with 7-Zip
         working-directory: dq9RTAVideoRecognitions
         run: |
-          $publishDir = "./erugiosu2/bin/Release/net6.0-windows/win-x64/publish"
-          $outputZip = "./erugiosu2.zip"
-          Compress-Archive -Path "$publishDir/*" -DestinationPath $outputZip
+          $publishDir = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/bin/Release/net6.0-windows/win-x64/publish"
+          $outputZip = "${{github.workspace}}/erugiosu2.zip"
+          & "C:\Program Files\7-Zip\7z.exe" a -t7z $outputZip $publishDir/*
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: PublishedFiles
-          path: "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2.zip"
+          path: "${{github.workspace}}/erugiosu2.zip"
