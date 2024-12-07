@@ -5,6 +5,7 @@ on:
 
 env:
   BUILD_TYPE: Release
+  TZ: 'Asia/Tokyo'
 
 jobs:
   build:
