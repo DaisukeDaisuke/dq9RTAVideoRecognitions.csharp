@@ -19,6 +19,14 @@ namespace erugiosu2
         static void Main()
         {
 
+            // OSバージョンチェック
+            if (!OperatingSystem.IsWindowsVersionAtLeast(6, 1)) // Windows 7 (6.1)以降かをチェック
+            {
+                MessageBox.Show("このアプリケーションはWindows 7以降でのみ動作します。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Environment.Exit(1);
+                return;
+            }
+
             // 管理者権限チェック
             if (IsAdministrator())
             {
@@ -27,8 +35,6 @@ namespace erugiosu2
                 return;
             }
 
-            // AssemblyResolveイベントを設定
-            //AppDomain.CurrentDomain.AssemblyResolve += OnResolveAssembly;
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
@@ -37,30 +43,11 @@ namespace erugiosu2
             Application.Run(form = new Form1());
         }
 
-        // DLLフォルダからアセンブリを読み込むイベントハンドラ
-        //private static Assembly OnResolveAssembly(object sender, ResolveEventArgs args)
-        //{
-        //    // DLLのパスを指定 (例: "DLLフォルダ"がアプリケーションのルートディレクトリにある場合)
-        //    string dllFolderPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dll");
-
-        //    // ロードが必要なアセンブリ名を取得
-        //    var assemblyName = new AssemblyName(args.Name).Name;
-
-        //    // DLLフォルダ内の該当DLLパスを取得
-        //    string assemblyPath = Path.Combine(dllFolderPath, assemblyName + ".dll");
-
-        //    // 該当DLLが存在する場合のみ読み込む
-        //    if (File.Exists(assemblyPath))
-        //    {
-        //        return Assembly.LoadFrom(assemblyPath);
-        //    }
-        //    return null; // DLLが見つからない場合
-        //}
-
 
         // 管理者権限で実行されているか確認
         private static bool IsAdministrator()
         {
+            Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(6, 1));
             using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
             {
                 WindowsPrincipal principal = new WindowsPrincipal(identity);
@@ -70,7 +57,7 @@ namespace erugiosu2
 
         private static void OnProcessExit(object sender, EventArgs e)
         {
-            form.OnExit();
+            form?.OnExit();
         }
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -102,7 +89,7 @@ namespace erugiosu2
             }
             finally
             {
-                form.OnExit();
+                form?.OnExit();
                 // アプリケーションを安全に終了
                 Environment.Exit(1);
             }

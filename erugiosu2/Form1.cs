@@ -22,7 +22,6 @@ namespace WindowsFormsApp1
     {
         private VideoCapture _capture;
         private Timer _timer;
-        private Bitmap bitmap;
         private int frameCounter = 0; // フレームカウンタ
         private Dictionary<string, Mat> templateCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         private Dictionary<string, Mat> NumberCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
@@ -208,7 +207,6 @@ namespace WindowsFormsApp1
             Initialized = false;
 
             int action = -1;
-            int damage = -1;
 
             if (maybeCritical != -1)
             {
@@ -685,6 +683,7 @@ namespace WindowsFormsApp1
 
         public Form1()
         {
+            Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(6, 1));
             InitializeComponent();
             InitializeDataGridView();
 
@@ -766,6 +765,8 @@ namespace WindowsFormsApp1
             // テンプレート画像をキャッシュ
             LoadTemplatesToCache();
 
+            DebugTextBox.Font = new Font(DebugTextBox.Font.FontFamily, 10); // サイズを24に設定
+
             _consoleManager = new CppConsoleManager(CppProgramPath);
             _consoleManager.OnOutputReceived += OnCppOutputReceived;
 
@@ -837,11 +838,6 @@ namespace WindowsFormsApp1
                     templateCache2.Add(templateFile, template);
                 }
             }
-
-
-
-            DebugTextBox.Font = new Font(DebugTextBox.Font.FontFamily, 10); // サイズを24に設定
-
         }
 
         // ParseInputの出力をフォーマットして文字列として返す関数
@@ -1270,6 +1266,7 @@ namespace WindowsFormsApp1
 
         public void SaveMatAsImage(Mat trimmed, int i)
         {
+            Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(6, 1));
 #if DEBUG
             // MatからBitmapへ変換
             using (Bitmap bmp = trimmed.ToBitmap())
