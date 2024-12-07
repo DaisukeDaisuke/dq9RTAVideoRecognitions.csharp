@@ -1,0 +1,54 @@
+name: build All
+
+on:
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+  TZ: JST
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x'
+      - uses: actions/checkout@v4
+        with:
+          repository: 'DaisukeDaisuke/dq9BattleEmulatorCollection.cpp'
+          ref: 'erugiosu'
+          path: 'dq9BattleEmulatorCollection'
+      - uses: actions/checkout@v4
+        with:
+          path: 'dq9RTAVideoRecognitions'
+      - name: Configure CMake
+        working-directory: dq9BattleEmulatorCollection
+        run: cmake -B ./build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Cmake Build
+        working-directory: dq9BattleEmulatorCollection
+        run: cmake --build ./build --config ${{env.BUILD_TYPE}}
+      - name: Move the executable file
+        run: |
+          # Move the back-end program
+          $source = "${{github.workspace}}/dq9BattleEmulatorCollection/build/${{env.BUILD_TYPE}}/newDirectory.exe"
+          $destination = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/resource/cbe.exe"
+          Move-Item -Path $source -Destination $destination -Force
+      - name: Build C#
+        working-directory: dq9RTAVideoRecognitions
+        run: dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
+      - name: Install 7-Zip
+        run: |
+          choco install 7zip -y
+      - name: Compress files with 7-Zip
+        working-directory: dq9RTAVideoRecognitions
+        run: |
+          $publishDir = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/bin/Release/net6.0-windows/win-x64/publish"
+          $outputZip = "${{github.workspace}}/erugiosu2.7z"
+          & "C:\Program Files\7-Zip\7z.exe" a -t7z $outputZip $publishDir/*
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PublishedFiles
+          path: "${{github.workspace}}/erugiosu2.7z"
