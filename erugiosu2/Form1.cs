@@ -514,6 +514,14 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
+            if(lastHit1 == "sippuu.png")
+            {
+                action = BattleAction.MERCURIAL_THRUST;
+                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage2 = -1;
+                ActionTaken = true;
+            }
+
 
             if (action != -1&&action != preAction && (lastHit1 != "" || lastHit2 != ""))
             {
