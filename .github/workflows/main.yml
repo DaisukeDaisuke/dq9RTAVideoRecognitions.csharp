@@ -35,7 +35,6 @@ jobs:
           $source = "${{github.workspace}}/dq9BattleEmulatorCollection/build/${{env.BUILD_TYPE}}/newDirectory.exe"
           $destination = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/resource/cbe.exe"
           Move-Item -Path $source -Destination $destination -Force
-      - run: dotnet restore --locked-mode
       - name: Build C#
         working-directory: dq9RTAVideoRecognitions
         run: dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
