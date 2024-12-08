@@ -167,6 +167,14 @@ namespace WindowsFormsApp1
                 }
 
                 updateText1();
+
+                var action1 = battleLog[participantId][actionIndex].Action;
+                if (action1 == BattleAction.ATTACK_ENEMY || action1 == BattleAction.CRITICAL_ATTACK || action1 == BattleAction.LIGHTNING_STORM || action1 == BattleAction.ULTRA_HIGH_SPEED_COMBO) {
+                    if (Sleeping && (ActionTaken || actionIndex == 2))
+                    {
+                        Sleeping = false;
+                    }
+                }
             }
         }
 
@@ -564,9 +572,9 @@ namespace WindowsFormsApp1
 
             DateTime currentTime = DateTime.Now;
 
-            //Debug.WriteLine((currentTime - LastDetection).TotalSeconds);
+            Debug.WriteLine((currentTime - LastDetection).TotalSeconds);
 
-            if ((currentTime - LastDetection).TotalSeconds > 3)
+            if ((currentTime - LastDetection).TotalSeconds > 5)
             {
                 // LastDetectionは1秒以上前です
                 if (lastHit1 == "")
