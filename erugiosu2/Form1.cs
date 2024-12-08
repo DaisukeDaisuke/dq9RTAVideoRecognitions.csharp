@@ -572,7 +572,7 @@ namespace WindowsFormsApp1
 
             DateTime currentTime = DateTime.Now;
 
-            Debug.WriteLine((currentTime - LastDetection).TotalSeconds);
+            //Debug.WriteLine((currentTime - LastDetection).TotalSeconds);
 
             if ((currentTime - LastDetection).TotalSeconds > 5)
             {
