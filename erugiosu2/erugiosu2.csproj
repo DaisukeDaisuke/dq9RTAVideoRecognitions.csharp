@@ -41,5 +41,7 @@
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
   </PropertyGroup>
-  <PropertyGroup />
+  <PropertyGroup>
+    <RepositoryUrl>https://github.com/DaisukeDaisuke/dq9RTAVideoRecognitions.csharp</RepositoryUrl>
+  </PropertyGroup>
 </Project>
