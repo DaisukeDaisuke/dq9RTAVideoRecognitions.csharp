@@ -44,4 +44,7 @@
   <PropertyGroup>
     <RepositoryUrl>https://github.com/DaisukeDaisuke/dq9RTAVideoRecognitions.csharp</RepositoryUrl>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>resource\Icon.ico</ApplicationIcon>
+  </PropertyGroup>
 </Project>

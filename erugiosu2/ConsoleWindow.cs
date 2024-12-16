@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace erugiosu2
@@ -15,6 +12,7 @@ namespace erugiosu2
         
         public ConsoleWindow()
         {
+            Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(6, 1));
             // ウィンドウの基本設定
             this.Text = "C++ Console Output";
             this.Size = new Size(1400, 600); // 初期サイズ
@@ -41,6 +39,7 @@ namespace erugiosu2
             this.Resize += (s, e) => _consoleOutput.Refresh();
 
             this.FormClosing += ConsoleWindow_FormClosing;
+           
         }
 
         // 外部からログを追加するためのメソッド
@@ -104,6 +103,19 @@ namespace erugiosu2
         private void ConsoleWindow_FormClosed(object sender, FormClosedEventArgs e)
         {
 
+        }
+
+        public void setIcon(string icon)
+        {
+            Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(6, 1));
+            if (icon == null)
+            {
+                this.Icon = null;
+            }
+            else
+            {
+                this.Icon = new Icon(icon);
+            }
         }
     }
 }

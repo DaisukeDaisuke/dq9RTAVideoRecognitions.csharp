@@ -113,6 +113,12 @@ namespace erugiosu2
         public const int SPECIAL_MEDICINE = 50;
         public const int DEAD = 51;
         public const int SONG = 52;
+        public const int FLAME_SLASH = 55; //火炎斬り
+        public const int KACRACKLE_SLASH = 56;// マヒャド斬り
+        public const int HATCHET_MAN = 57;// 魔人切り
+        public const int UPWARD_SLICE = 58;// 切り上げ
+
+
 
 
         // 味方アクションかどうかを判定するダミー関数（実装は任意）
@@ -211,11 +217,15 @@ namespace erugiosu2
         { ELFIN_ELIXIR, "エルフののみぐすり" },
         { MAGIC_WATER, "まほうのせいすい" },
         { DEAD, "しんでしまった！" },
-        { SONG, "ゴスペルソング" }
+        { SONG, "ゴスペルソング" },
+        { FLAME_SLASH, "火炎斬り" },
+        { KACRACKLE_SLASH, "マヒャド斬り" },
+        { HATCHET_MAN, "魔人切り" },
+        { UPWARD_SLICE, "切り上げ" },
     };
 
         public static string GetActionName(int actionId) =>
-            actionNames.TryGetValue(actionId, out var name) ? name : "Unknown Action";
+            actionNames.TryGetValue(actionId, out var name) ? name : ("Unknown Action" + actionId.ToString());
     }
 
 

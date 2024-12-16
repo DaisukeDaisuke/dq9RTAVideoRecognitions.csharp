@@ -14,6 +14,7 @@ using erugiosu2;
 using System.Drawing.Imaging;
 using System.Threading.Tasks;
 using System.Text;
+using System.Threading;
 
 namespace WindowsFormsApp1
 {
@@ -21,88 +22,41 @@ namespace WindowsFormsApp1
     public partial class Form1 : Form
     {
         private VideoCapture _capture;
-        private Timer _timer;
-        private int frameCounter = 0; // フレームカウンタ
-        private Dictionary<string, Mat> templateCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
-        private Dictionary<string, Mat> NumberCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
-        private Dictionary<string, Mat> templateCache1 = new Dictionary<string, Mat>(); // テンプレートキャッシュ
-        private Dictionary<string, Mat> templateCache2 = new Dictionary<string, Mat>(); // テンプレートキャッシュ
-        int[] matchResults1 = new int[3] { -1, -1, -1 };
-        int[] matchResults2= new int[3] { -1, -1, -1 };
+        private System.Windows.Forms.Timer _timer;
+        private List<BossTemplate> bossTemplates = new List<BossTemplate>(); // BossTemplateのリスト
+        private IRecognitionBoss ActiveBoss = null;
 
         Dictionary<int, List<BattleAction>> battleLog = new Dictionary<int, List<BattleAction>>();
 
-        private string lastHit1 = ""; 
-        private string lastHit2 = ""; 
-        private string lastHit3 = "";
-
-        private int preAction = -1;
-        private bool Initialized = false;
-        private int NeedDamage1 = -1;
-        private bool NeedDamage1Enabled = false;
-        private int NeedDamage2 = -1;
-        private bool NeedDamage2Enabled = false;
-        private int lastdamage1 = -1;
-        private int lastdamage2 = -1;
-        private int ActionIndex = 0;
-        private int TurnIndex = 0;
-        private int maybeCritical = -1;
-        private DateTime LastDetection = DateTime.Now;
-        // グローバルスコープで一致率の最も高い画像名と一致率を格納する変数を定義
-        double[] highestMatchPercentage = new double[3] { 0, 0, 0 };
-        string[] highestMatchImageNames = new string[3] { "", "", "" };
         private int marginX = 25;
         private int marginY = 205;
-        private bool flag = false;
-        
 
         public bool updateText1()
         {
-            UpdateOutputText("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
+            //UpdateOutputText("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
             return true;
         }
 
         public void runSearch()
         {
-            string test = ("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
-            _consoleManager.SendInput(test);
-            flag = true;
+            //string test = ("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
+            //_consoleManager.SendInput(test);
+            //flag = true;
         }
 
-        public int ConvertMatchResults(int[] matchResults)
+        private void clearActions()
         {
-            // 配列がnullまたは長さが3以外の場合は例外をスロー
-            if (matchResults == null || matchResults.Length != 3)
-                throw new ArgumentException("matchResults must be an array with 3 elements.");
-
-            // その他の入力に対して動的に変換処理
-            int result = 0;
-            bool hasValidNumber = false;
-
-            if (matchResults[0] == -1)
+            foreach (var log in battleLog.Values)
             {
-                return -1;
+                log.Clear(); // 各List内の参照を解除
             }
-            if (matchResults[1] == -1&& matchResults[2] != -1)
-            {
-                return -1;
-            }
-
-            for (int i = 0; i < matchResults.Length; i++)
-            {
-                if (matchResults[i] != -1)
-                {
-                    result = result * 10 + matchResults[i];
-                    hasValidNumber = true;
-                }
-            }
-
-            // 有効な数字がない場合、無効として-1を返す
-            return hasValidNumber ? result : -1;
+            battleLog.Clear(); // Dictionary内の参照も解除
+            dataGridView1.Rows.Clear();
+            UpdateOutputText("");
         }
 
         // 行動を記録するメソッド
-        void RecordAction(int participantId, int action)
+        void RecordAction(int participantId, int ActionIndex, int action)
         {
             if (!battleLog.ContainsKey(participantId))
             {
@@ -146,6 +100,8 @@ namespace WindowsFormsApp1
             updateText1();
         }
 
+        bool flag = false;
+
         void UpdateDamage(int participantId, int actionIndex, int damage)
         {
             if (battleLog.ContainsKey(participantId) &&
@@ -169,423 +125,13 @@ namespace WindowsFormsApp1
                 updateText1();
 
                 var action1 = battleLog[participantId][actionIndex].Action;
-                if (action1 == BattleAction.ATTACK_ENEMY || action1 == BattleAction.CRITICAL_ATTACK || action1 == BattleAction.LIGHTNING_STORM || action1 == BattleAction.ULTRA_HIGH_SPEED_COMBO) {
-                    if (Sleeping && (ActionTaken || actionIndex == 2))
-                    {
-                        Sleeping = false;
-                    }
-                }
+                //if (action1 == BattleAction.ATTACK_ENEMY || action1 == BattleAction.CRITICAL_ATTACK || action1 == BattleAction.LIGHTNING_STORM || action1 == BattleAction.ULTRA_HIGH_SPEED_COMBO) {
+                //    if (Sleeping && (ActionTaken || actionIndex == 2))
+                //    {
+                //        Sleeping = false;
+                //    }
+                //}
             }
-        }
-
-        private bool ActionTaken = false;
-        private bool Sleeping = false;
-        private async void ProcessState()
-        {
-            if (lastHit1 == "erugio.png"&&lastHit2 == "reset.png")
-            {
-                if (!Initialized)
-                {
-                    foreach (var log in battleLog.Values)
-                    {
-                        log.Clear(); // 各List内の参照を解除
-                    }
-                    battleLog.Clear(); // Dictionary内の参照も解除
-                    dataGridView1.Rows.Clear();
-                    Initialized = true;
-                    ActionIndex = 0;
-                    TurnIndex = 0;
-                    LastDetection = DateTime.Now;
-                    NeedDamage2Enabled = false;
-                    NeedDamage2 = -1;
-                    lastdamage2 = -1;
-                    NeedDamage1Enabled = false;
-                    NeedDamage1 = -1;
-                    lastdamage1 = -1;
-                    ActionTaken = false;
-                    flag = false;
-                    Sleeping = false;
-                    UpdateOutputText("");
-                    await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
-                    
-
-                }
-                return;
-            }
-            Initialized = false;
-
-            int action = -1;
-
-            if (maybeCritical != -1)
-            {
-                int turnind = maybeCritical & 0xfff;
-                int actionid = (maybeCritical >> 12) & 0xf;
-                if(lastHit1 == "critical.png")
-                {
-                    UpdateAction(turnind, actionid, BattleAction.CRITICAL_ATTACK);
-                    maybeCritical = -1;
-                }
-            }
-
-            int damageTest1 = ConvertMatchResults(matchResults1);
-            int damageTest2 = ConvertMatchResults(matchResults2);
-           if (NeedDamage1 != -1&& NeedDamage1Enabled || lastdamage1 < damageTest1)
-            {
-                if (lastHit1 == "guard.png" || lastHit1 == "miss.png" || lastHit1 == "miss2.png" || lastHit1 == "mikawasi.png")
-                {
-                    int turnind = NeedDamage1 & 0xfff;
-                    int actionid = (NeedDamage1 >> 12) & 0xf;
-                    NeedDamage1Enabled = false;
-                    //NeedDamage1 = -1;
-                    maybeCritical = -1;
-                    UpdateDamage(turnind, actionid, 0);
-                }
-                
-                if (damageTest1 != -1)
-                {
-                    lastdamage1 = damageTest1;
-                    int turnind = NeedDamage1 & 0xfff;
-                    int actionid = (NeedDamage1 >> 12) & 0xf;
-                    UpdateDamage(turnind, actionid, damageTest1);
-                    NeedDamage1Enabled = false;
-                    //NeedDamage1 = -1;
-                }
-                else
-                {
-                    
-                    if (damageTest2 != -1&& damageTest1 < damageTest2)
-                    {
-                        lastdamage1 = damageTest2;
-                        int turnind = NeedDamage1 & 0xfff;
-                        int actionind = (NeedDamage1 >> 12) & 0xf;
-                        NeedDamage1Enabled = false;
-                        //NeedDamage1 = -1;
-                        UpdateDamage(turnind, actionind, damageTest2);
-                    }
-                }
-                return;
-            }
-/*            else if (!NeedDamage1Enabled && NeedDamage1 != -1)
-            {
-                if (lastdamage1 > 0 && lastdamage1 < damageTest1 && damageTest1 != -1)
-                {
-                    int turnind = NeedDamage1 & 0xfff;
-                    int actionid = (NeedDamage1 >> 12) & 0xf;
-                    UpdateDamage(turnind, actionid, damageTest2);
-                }
-            }*/else if ((NeedDamage2 != -1&& NeedDamage2Enabled) || lastdamage2 < damageTest2)
-            {
-                if (lastHit1 == "guard.png"||lastHit1 == "miss.png"||lastHit1 == "miss2.png" || lastHit1 == "mikawasi.png")
-                {
-                    int turnind = NeedDamage2 & 0xfff;
-                    int actionind = (NeedDamage2 >> 12) & 0xf;
-                    //NeedDamage2 = -1;
-                    NeedDamage2Enabled = false;
-                    maybeCritical = -1;
-                    lastdamage2 = -1;
-                    UpdateDamage(turnind, actionind, 0);
-                }
-                if (damageTest2 != -1)
-                {
-                    int turnind = NeedDamage2 & 0xfff;
-                    int actionind = (NeedDamage2 >> 12) & 0xf;
-                    NeedDamage2Enabled = false;
-                    //NeedDamage2 = -1;
-                    lastdamage2 = damageTest2;
-                    UpdateDamage(turnind, actionind, damageTest2);
-                }
-                else
-                {
-                    if (damageTest1 != -1 && damageTest2 < damageTest1)
-                    {
-                        int turnind = NeedDamage2 & 0xfff;
-                        int actionid = (NeedDamage2 >> 12) & 0xf;
-                        NeedDamage2Enabled = false;
-                        lastdamage2 = damageTest1;
-                        //NeedDamage2 = -1;
-                        UpdateDamage(turnind, actionid, damageTest1);
-                    }
-                }
-                return;
-            }
-/*            else if (!NeedDamage2Enabled && NeedDamage2 != -1)
-            {
-                if (lastdamage1 > 0 && lastdamage2 < damageTest2 && damageTest2 != -1)
-                {
-                    int turnind = NeedDamage2 & 0xfff;
-                    int actionid = (NeedDamage2 >> 12) & 0xf;
-                    UpdateDamage(turnind, actionid, damageTest2);
-                }
-            }*/
-
-            if (lastHit1 == "sukara.png")
-            {
-                action = BattleAction.BUFF;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-            }
-            if(lastHit1 == "hadou.png")
-            {
-                action = BattleAction.DISRUPTIVE_WAVE;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-            }
-            if (lastHit1 == "yaketuku.png")
-            {
-                action = BattleAction.BURNING_BREATH;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-            }
-            if (lastHit1 == "zilyoukuu.png")
-            {
-                action = BattleAction.SKY_ATTACK;
-                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
-                NeedDamage2 = -1;
-            }
-            if (lastHit1 == "merazoma.png")
-            {
-                action = BattleAction.MERA_ZOMA;
-                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
-                NeedDamage2 = -1;
-            }
-            if (lastHit1 == "mira-.png")
-            {
-                action = BattleAction.MAGIC_MIRROR;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-            }
-
-            if (lastHit1 == "erugio.png"&&lastHit2 == "attack.png")
-            {
-                maybeCritical = (ActionIndex << 12) | TurnIndex;
-                action = BattleAction.ATTACK_ENEMY;
-                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
-                NeedDamage2 = -1;
-            }
-
-            if(lastHit1 == "samidare.png"||lastHit1 == "samidare2.png")
-            {
-                action = BattleAction.MULTITHRUST;
-                NeedDamage2 = (ActionIndex << 12) | TurnIndex;
-                NeedDamage1 = -1;
-                ActionTaken = true;
-            }
-
-            if (lastHit1 == "no_hadou.png")
-            {
-                action = BattleAction.LAUGH;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-            }
-
-            if(lastHit1 == "tameru.png")
-            {
-                action = BattleAction.PSYCHE_UP;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-            }
-
-            if(lastHit1 == "zigosupa.png")
-            {
-                action = BattleAction.LIGHTNING_STORM;
-                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
-                NeedDamage2 = -1;
-            }
-
-            if(lastHit1 == "kuroi.png")
-            {
-                action = BattleAction.DARK_BREATH;
-                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
-                NeedDamage2 = -1;
-            }
-
-            if(lastHit1 == "erugio.png" && lastHit2 == "uhsc.png")
-            {
-                action = BattleAction.ULTRA_HIGH_SPEED_COMBO;
-                NeedDamage2 = (ActionIndex << 12) | TurnIndex;
-                NeedDamage1 = -1;
-            }
-
-            if(lastHit1 == "sutemi.png")
-            {
-                action = BattleAction.DOUBLE_UP;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-            }
-            if(lastHit1 == "meisou.png")
-            {
-                action = BattleAction.MEDITATION;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-            }
-            if(lastHit1 == "madannte.png"){
-                action = BattleAction.MAGIC_BURST;
-                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
-                NeedDamage2 = -1;
-            }
-            if (lastHit1 == "ice.png")
-            {
-                action = BattleAction.FREEZING_BLIZZARD;
-                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
-                NeedDamage2 = -1;
-            }
-            if(lastHit1 == "fullheal.png")
-            {
-                action = BattleAction.FULLHEAL;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-            }
-            if(lastHit1 == "more_heal.png")
-            {
-                action = BattleAction.MORE_HEAL;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-            }
-
-            if (lastHit1 == "defense_champion.png" &&lastHit2 == "defense_champion2.png")
-            {
-                action = BattleAction.DEFENDING_CHAMPION;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-            }
-
-            if(lastHit1 == "ayasii.png")
-            {
-                action = BattleAction.LULLAB_EYE;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                Sleeping = true;
-            }
-
-
-            if (lastHit1 == "mp2.png")
-            {
-                action = BattleAction.RESTORE_MP;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-            }
-
-            if (Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex != 0 && !ActionTaken)
-            {
-                action = BattleAction.TURN_SKIPPED;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-                Sleeping = false;
-            }
-            else if (Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex == 0 && !ActionTaken)
-            {
-                action = BattleAction.CURE_SLEEPING;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-                Sleeping = false;
-            }
-
-            if (lastHit1 == "Paralysis.png") 
-            {
-                action = BattleAction.PARALYSIS;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-            }
-
-            if(lastHit1 == "sleeping2.png"&&lastHit2 == "" && lastHit3 == "")
-            {
-                action = BattleAction.SLEEPING;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-                Sleeping = true;
-            }
-
-            if (lastHit1 == "sleeping2.png" && ( lastHit3 == "dead.png" || lastHit3 == "dead2.png"))
-            {
-                action = BattleAction.DEAD;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-            }
-
-            if(lastHit1 == "song.png")
-            {
-                action = BattleAction.SONG;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-            }
-
-            if(lastHit1 == "sippuu.png")
-            {
-                action = BattleAction.MERCURIAL_THRUST;
-                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-            }
-
-
-            if (action != -1&&action != preAction && (lastHit1 != "" || lastHit2 != ""))
-            {
-                NeedDamage1Enabled = NeedDamage1 != -1;
-                NeedDamage2Enabled = NeedDamage2 != -1;
-                lastdamage1 = -1;
-                lastdamage2 = -1;
-
-                if (lastHit2 != "attack.png")
-                {
-                    maybeCritical = -1;
-                }
-                preAction = action;
-                RecordAction(TurnIndex, action);
-                if (NeedDamage1 == -1&&NeedDamage2 == -1)
-                {
-                    UpdateDamage(TurnIndex, ActionIndex, 0);
-                }
-                ActionIndex++;
-                if (ActionIndex == 3)
-                {
-                    ActionIndex = 0;
-                    TurnIndex++;
-                    ActionTaken = false;
-                }
-            }
-            else if(action != -1 && action == preAction)
-            {
-                LastDetection = DateTime.Now;
-                if (ActionIndex == 0)
-                {
-                    ActionTaken = false;
-                }
-            }
-            else
-            {
-                if (ActionIndex == 0)
-                {
-                    ActionTaken = false;
-                }
-            }
-
-            DateTime currentTime = DateTime.Now;
-
-            //Debug.WriteLine((currentTime - LastDetection).TotalSeconds);
-
-            if ((currentTime - LastDetection).TotalSeconds > 5)
-            {
-                // LastDetectionは1秒以上前です
-                if (lastHit1 == "")
-                {
-                    preAction = 0;
-                }
-            }
-            
-           
-
-            return;
         }
 
         // DataGridViewの初期設定
@@ -682,6 +228,7 @@ namespace WindowsFormsApp1
         private CppConsoleManager _consoleManager;
         private const string CppProgramPath = "resource\\cbe.exe"; // C++プログラムのパス
         private ConsoleWindow _ConsoleWindow;
+        private TemplateMatcher _matcher1;
 
         // 出力エリアに動的にデータを追加するメソッド例
         private void UpdateOutputText(string data)
@@ -712,6 +259,7 @@ namespace WindowsFormsApp1
 
             // 必要に応じて初期出力データを設定
             outputTextBox.Text = "";
+            this.Icon = new Icon(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resource", "Icon.ico"));
 
             // Resizeイベントでフォームサイズ変更時にDataGridViewの幅を追従
             this.Resize += new EventHandler(Form1_Resize);
@@ -764,14 +312,11 @@ namespace WindowsFormsApp1
             }
 
             // タイマー設定（5fps）
-            _timer = new Timer();
+            _timer = new System.Windows.Forms.Timer();
             _timer.Interval = 300;
             _timer.Tick += new EventHandler(CaptureFrame);
             _timer.Start();
 
-
-            // テンプレート画像をキャッシュ
-            LoadTemplatesToCache();
 
             DebugTextBox.Font = new Font(DebugTextBox.Font.FontFamily, 10); // サイズを24に設定
 
@@ -781,6 +326,31 @@ namespace WindowsFormsApp1
             _ConsoleWindow = new ConsoleWindow();
             _ConsoleWindow.Show();
 
+            this.Icon = null;
+            _ConsoleWindow.setIcon(null);
+
+            
+
+
+            UIManager actionManager = new UIManager(RecordAction, UpdateAction, UpdateDamage, clearActions, UpdateDebug);
+
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string resourceDir = Path.Combine(baseDir, "resource");
+
+            // BossTemplate を作成
+            BossTemplate neko2BossTemplate = new BossTemplate(
+                "neko2",
+                () => new neko2(resourceDir, actionManager), // パスを渡すファクトリ関数
+                "neko2_template",
+                 Path.Combine(resourceDir, "neko", "Icon.ico"),
+                 2
+            );
+
+            // リストに追加
+            bossTemplates.Add(neko2BossTemplate);
+
+
+            _matcher1 = new TemplateMatcher(Path.Combine(resourceDir, "BossTemplate"), 150, new Size(130, 45), false, null, 200, 0.7);
         }
 
         private void OnCppOutputReceived(string obj)
@@ -790,61 +360,6 @@ namespace WindowsFormsApp1
             if (_ConsoleWindow != null)
             {
                 _ConsoleWindow.AppendText(obj);
-            }
-        }
-
-        private void LoadTemplatesToCache()
-        {
-            // resourceフォルダ内のテンプレート画像をキャッシュに読み込む
-            string resourceDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resource", "message_v2");
-            string[] templateFiles = Directory.GetFiles(resourceDir, "*.png");
-
-            foreach (string templateFile in templateFiles)
-            {
-                if (!templateCache.ContainsKey(templateFile))
-                {
-                    Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
-                    templateCache.Add(templateFile, template);
-                }
-            }
-
-            // resourceフォルダ内のテンプレート画像をキャッシュに読み込む
-            string resourceDir1 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resource", "numbers");
-            string[] templateFiles1 = Directory.GetFiles(resourceDir1, "*.png");
-
-            foreach (string templateFile in templateFiles1)
-            {
-                if (!NumberCache.ContainsKey(templateFile))
-                {
-                    Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
-                    NumberCache.Add(templateFile, template);
-                }
-            }
-
-            // resourceフォルダ内のテンプレート画像をキャッシュに読み込む
-            string resourceDir2 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resource", "submessage_v2");
-            string[] templateFiles2 = Directory.GetFiles(resourceDir2, "*.png");
-
-            foreach (string templateFile in templateFiles2)
-            {
-                if (!templateCache1.ContainsKey(templateFile))
-                {
-                    Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
-                    templateCache1.Add(templateFile, template);
-                }
-            }
-
-            // resourceフォルダ内のテンプレート画像をキャッシュに読み込む
-            string resourceDir3 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resource", "sub2message_v2");
-            string[] templateFiles3 = Directory.GetFiles(resourceDir3, "*.png");
-
-            foreach (string templateFile in templateFiles3)
-            {
-                if (!templateCache2.ContainsKey(templateFile))
-                {
-                    Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
-                    templateCache2.Add(templateFile, template);
-                }
             }
         }
 
@@ -943,26 +458,54 @@ namespace WindowsFormsApp1
 
         private async void CaptureFrame(object sender, EventArgs e)
         {
-            lastHit1 = "";
-            lastHit2 = "";
-
-            highestMatchImageNames[0] = "";
-            highestMatchImageNames[1] = "";
-            highestMatchImageNames[2] = "";
-
-            highestMatchPercentage[0] = 0;
-            highestMatchPercentage[1] = 0;
-            highestMatchPercentage[2] = 0;
-
-
             using (Mat frame = new Mat())
             {
                 _capture.Read(frame);
 
                 if (!frame.IsEmpty)
                 {
+                    if (ActiveBoss == null)
+                    {
+                        using (Mat tmp = new Mat(frame, new Rectangle(78, 645, 160, 70)))
+                        {
+                            _matcher1.ProcessImage(tmp);
+                            if (_matcher1.MatchResults[0] != TemplateMatcher.NO_MATCH)
+                            {
+                                foreach (var entry in bossTemplates)
+                                {
+                                    if (entry.Match(_matcher1.MatchResults[0], tmp))
+                                    {
+                                        using (Mat trimed2 = new Mat(frame, new Rectangle(420, 645, 200, 70)))
+                                        {
+                                            _matcher1.ProcessImage(trimed2);
+                                            if (_matcher1.MatchResults[0] != TemplateMatcher.NO_MATCH)
+                                            {
+                                                await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
+                                                ActiveBoss = entry.Activate();
+                                                this.Icon = new Icon(entry.IcopPath);
+                                                _ConsoleWindow.setIcon(entry.IcopPath);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (ActiveBoss.ExecuteRecognition(frame))
+                        {
+                            ActiveBoss.Dispose();
+                            ActiveBoss = null;
+
+                            this.Icon = null;
+                            _ConsoleWindow.setIcon(null);
+                        }
+                    }
+
                     // 複数領域を条件に基づいて処理する
-                    ProcessCaptureAreas(frame);
+                    //ProcessCaptureAreas(frame);
                     using (Mat resizedFrame1 = new Mat(frame, new Rectangle(0, 0, 958, 718)))
                     {
                         using (Mat resizedFrame2 = new Mat())
@@ -978,522 +521,14 @@ namespace WindowsFormsApp1
                         }
                     }
                 }
-
-                StringBuilder sb = new StringBuilder();
-                sb.Append("int1: ").Append(string.Join(", ", matchResults1)).Append(" \r\n");
-                sb.Append("int2: ").Append(string.Join(", ", matchResults2)).Append(" \r\n");
-
-                // tem1, tem2, tem3の部分を追加
-                for (int j = 0; j < 3; j++)
-                {
-                    string templateName = string.IsNullOrEmpty(highestMatchImageNames[j]) ? "null" : highestMatchImageNames[j];
-                    double matchPercentage = highestMatchPercentage[j];
-                    sb.Append($"tem{j + 1}: {templateName}: {matchPercentage:F1}% \r\n");  // 一致率を1桁にフォーマット
-                }
-
-                DebugTextBox.Text = sb.ToString();
-
-
-                ProcessState();
-
-                frame.Dispose();
             }
         }
 
-        // 領域の指定と処理を行う関数
-        private void ProcessCaptureAreas(Mat frame)
+        private void UpdateDebug(String text)
         {
-            // 複数のキャプチャ領域の座標を指定
-            Rectangle[] areas = {
-            new Rectangle(78, 645, 160, 70),  // 1つ目の領域
-            // 他の条件に基づく領域もここに追加
-        };
-
-            Rectangle[] ocr = {
-            new Rectangle(179, 645, 160, 60),  // 1つ目の領域
-            // 他の条件に基づく領域もここに追加
-        };
-
-            Rectangle[] ocr2 = {
-            new Rectangle(518, 619, 100, 90),  // 1つ目の領域
-            // 他の条件に基づく領域もここに追加
-        };
-
-
-            foreach (var area in areas)
-            {
-                //// この領域に対する画像処理
-                using (Mat cropped = new Mat(frame, area))
-                {
-                    ProcessCroppedImage(cropped);
-                }
-            }
-
-            foreach (var area in ocr)
-            {
-                //// この領域に対する画像処理
-                using (Mat cropped = new Mat(frame, area))
-                {
-                    ProcessCroppedImage1(cropped);
-                }
-            }
-
-            foreach (var area in ocr2)
-            {
-                //// この領域に対する画像処理
-                using (Mat cropped = new Mat(frame, area))
-                {
-                    ProcessCroppedImage2(cropped);
-                }
-            }
-
-            foreach (var area in areas)
-            {
-                DrawCaptureArea(frame, area);
-            }
-
-            foreach (var area in ocr)
-            {
-                DrawCaptureArea(frame, area);
-            }
-
-            foreach (var area in ocr2)
-            {
-               DrawCaptureArea(frame, area);
-            }
+            DebugTextBox.Text = text;
         }
-
-        // キャプチャ領域の枠を描画
-        private void DrawCaptureArea(Mat frame, Rectangle area)
-        {
-            CvInvoke.Rectangle(frame, area, new MCvScalar(150, 150, 150), 5); // 緑色の枠を描画
-        }
-
-        private void ProcessCroppedImage2(Mat cropped)
-        {
-            Image<Bgr, Byte> img = cropped.ToImage<Bgr, Byte>();
-
-            // RGBの下限と上限を設定
-            var lowerBound = new Bgr(140, 140, 140); // RGBそれぞれ200以上
-            var upperBound = new Bgr(255, 255, 255); // 白の範囲
-
-            // マスクを作成 (範囲内のピクセルが白、それ以外が黒)
-            Image<Gray, Byte> mask = img.InRange(lowerBound, upperBound);
-
-            // マスクを適用して白黒画像を作成
-            Image<Bgr, Byte> result = img.CopyBlank();
-            result.SetValue(new Bgr(255, 255, 255), mask);
-
-            using (Mat Tmp = result.Mat)
-            {
-               
-                using (Mat trimmed = TrimFirstPixel(Tmp, 40, 60))
-                {
-                    if (trimmed.Width == 40 && trimmed.Height == 60)
-                    {
-                        foreach (var entry in templateCache1)
-                        {
-                            string templateFile = entry.Key;
-                            Mat template = entry.Value;
-
-                            using (Mat resultMat = new Mat())
-                            {
-                                // テンプレートマッチングを実行
-                                CvInvoke.MatchTemplate(trimmed, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
-
-                                // 一致率を計算
-                                double minVal = 0, maxVal = 0;
-                                Point minLoc = new Point(), maxLoc = new Point();
-                                CvInvoke.MinMaxLoc(resultMat, ref minVal, ref maxVal, ref minLoc, ref maxLoc);
-
-                                // 一致率をパーセンテージに変換
-                                double matchPercentage = maxVal * 100.0;
-
-
-                                // 現在の一致率がこれまでの最高値を超える場合のみ更新
-                                if (matchPercentage > highestMatchPercentage[2])
-                                {
-                                    highestMatchPercentage[2] = matchPercentage;
-                                    highestMatchImageNames[2] = Path.GetFileName(templateFile); // 画像名を保存
-                                }
-
-                                if (matchPercentage >= 80)
-                                {
-                                    Console.WriteLine($"2Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
-                                    lastHit2 = Path.GetFileName(templateFile);
-                                }
-                            }
-                        }
-
-                        if (frameCounter % 2 == 0)
-                        {
-                            //SaveMatAsImage(trimmed, 1);
-                            //pictureBox4.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
-                        }
-                    }
-                }
-            }
-        }
-
-        private void ProcessCroppedImage(Mat cropped)
-        {
-            Image<Bgr, Byte> img = cropped.ToImage<Bgr, Byte>();
-
-            // RGBの下限と上限を設定
-            var lowerBound = new Bgr(140, 140, 140); // RGBそれぞれ200以上
-            var upperBound = new Bgr(255, 255, 255); // 白の範囲
-
-            // マスクを作成 (範囲内のピクセルが白、それ以外が黒)
-            Image<Gray, Byte> mask = img.InRange(lowerBound, upperBound);
-
-            // マスクを適用して白黒画像を作成
-            Image<Bgr, Byte> result = img.CopyBlank();
-            result.SetValue(new Bgr(255, 255, 255), mask);
-
-            using (Mat Tmp = result.Mat) {
-                using (Mat trimmed = TrimFirstPixel(Tmp, 130, 45))
-                {
-                    if (trimmed.Width == 130 && trimmed.Height == 45)
-                    {
-                        //if (pictureBox2.Image != null)
-                        //{
-                        //    pictureBox2.Image.Dispose();
-                        //}
-                        //pictureBox2.Image = trimmed.ToBitmap();
-
-                        foreach (var entry in templateCache)
-                        {
-                            string templateFile = entry.Key;
-                            Mat template = entry.Value;
-
-                            using (Mat resultMat = new Mat())
-                            {
-                                // テンプレートマッチングを実行
-                                CvInvoke.MatchTemplate(trimmed, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
-
-                                // 一致率を計算
-                                double minVal = 0, maxVal = 0;
-                                Point minLoc = new Point(), maxLoc = new Point();
-                                CvInvoke.MinMaxLoc(resultMat, ref minVal, ref maxVal, ref minLoc, ref maxLoc);
-
-                                // 一致率をパーセンテージに変換
-                                double matchPercentage = maxVal * 100.0;
-
-                                // 現在の一致率がこれまでの最高値を超える場合のみ更新
-                                if (matchPercentage > highestMatchPercentage[0])
-                                {
-                                    highestMatchPercentage[0] = matchPercentage;
-                                    highestMatchImageNames[0] = Path.GetFileName(templateFile); // 画像名を保存
-                                }
-
-                                if (matchPercentage >= 80)
-                                {
-                                    lastHit1 = Path.GetFileName(templateFile);
-                                    Console.WriteLine($"Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
-                                }
-                                //SaveMatAsImage(trimmed, 1);
-                            }
-                        }
-
-                        if (frameCounter % 2 == 0)
-                        {
-                            
-                            //pictureBox2.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
-                        }
-                    }
-                }
-            }
-
-            // トリミングする領域の配列
-            Rectangle[] areas = {
-                new Rectangle(0, 0, 60, 60),
-                new Rectangle(55, 0, 60, 60),
-                new Rectangle(105, 0, 60, 60),
-            };
-
-            // 各領域に対してトリミングを行い、異なるPictureBoxに表示
-            for (int i = 0; i < areas.Length; i++)
-            {
-                var area = areas[i];
-
-                result.ROI = area;
-
-                // Matに変換
-                using (Mat resultMat1 = result.Mat)
-                {
-                    using (Mat trimmed = TrimFirstPixel(resultMat1, 26, 40))
-                    {
-                        if (trimmed.Width == 26 && trimmed.Height == 40)
-                        {
-                            bool matched = false;
-                            foreach (var entry in NumberCache)
-                            {
-                                string templateFile = entry.Key;
-                                Mat template = entry.Value;
-
-                                using (Mat resultMat = new Mat())
-                                {
-                                    // テンプレートマッチングを実行
-                                    CvInvoke.MatchTemplate(trimmed, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
-
-                                    // 一致率を計算
-                                    double minVal = 0, maxVal = 0;
-                                    Point minLoc = new Point(), maxLoc = new Point();
-                                    CvInvoke.MinMaxLoc(resultMat, ref minVal, ref maxVal, ref minLoc, ref maxLoc);
-
-                                    // 一致率をパーセンテージに変換
-                                    double matchPercentage = maxVal * 100.0;
-
-
-                                    if (matchPercentage >= 93.5)
-                                    {
-                                        string templateFileName = Path.GetFileNameWithoutExtension(templateFile);
-                                        string normalizedTemplate = templateFileName.Split('_')[0]; // "_"以降を除去してベース番号を取得
-                                        matchResults1[i] = int.Parse(normalizedTemplate);
-                                        matched = true;
-                                        Console.WriteLine($"Number20 {i} with {Path.GetFileName(templateFile)}: {matchPercentage}%");
-                                    }
-                                }
-                            }
-
-                            if (!matched)
-                            {
-                                matchResults1[i] = -1;
-                            }
-
-                            if (frameCounter % 10 == 0)
-                            {
-                                //SaveMatAsImage(trimmed, i);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-
-        public void SaveMatAsImage(Mat trimmed, int i)
-        {
-            Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(6, 1));
-#if DEBUG
-            // MatからBitmapへ変換
-            using (Bitmap bmp = trimmed.ToBitmap())
-            {
-                // 画像をPNG形式で保存
-                bmp.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", ImageFormat.Png);
-            }
-#endif
-        }
-
-
-        //呼びだす際はusing使う事。使わないとメモリリークする
-        private Mat TrimFirstPixel(Mat resultMat1, int xSize, int ySize) {
-            // 最初の白ピクセルを探索
-            Rectangle firstWhitePixel = new Rectangle(0, 0, 0, 0); // 初期値として無効な位置を設定
-            bool found = false, found1 = false;
-            int cropWidth = 0, cropHeight = 0;
-            int foundX = 0, foundY = 0;
-            Mat monoImage = new Mat();
-            CvInvoke.CvtColor(resultMat1, monoImage, Emgu.CV.CvEnum.ColorConversion.Bgr2Gray);
-            Image<Bgr, byte> tmp = resultMat1.ToImage<Bgr, byte>();
-
-            for (int y = 0; y < resultMat1.Height; y++)
-            {
-                 for (int x = 0; x < resultMat1.Width; x++)
-                {
-                    var color = tmp[y, x];
-                    // 白色のピクセルを判定
-                    if (color.Blue >= 200 && color.Green >= 200 && color.Red >= 200)
-                    {
-                        //cropWidth = Math.Min(xSize, resultMat1.Width - x);
-                        found1 = true;
-                        foundX = x;
-                        foundY = y;
-                        break;
-                    }
-                }
-                if (found1)
-                {
-                    break; // 外側のループも抜ける
-                }
-            }
-
-            if (found1)
-            {
-                for (int x = 0; x < resultMat1.Width; x++)
-                {
-                    for (int y = 0; y < resultMat1.Height; y++)
-                    {
-
-                        // ピクセルの色を取得
-                        var color = tmp[y, x];
-
-                        // 白色のピクセルを判定
-                        if (color.Blue >= 200 && color.Green >= 200 && color.Red >= 200)
-                        {
-
-                            foundX = Math.Min(foundX, x);
-                            foundY = Math.Min(foundY, y);
-
-                            cropHeight = Math.Min(ySize, resultMat1.Height - foundY); // y座標から画像の下端までの距離を超えない
-                            cropWidth = Math.Min(xSize, resultMat1.Width - foundX); // y座標から画像の下端までの距離を超えない
-
-                            // 白ピクセルの位置を基準に、切り取り領域を設定
-                            found = true;
-                            break; // 白ピクセルを見つけたらループを抜ける
-                        }
-                    }
-                    if (found)
-                    {
-                        break; // 外側のループも抜ける
-                    }
-                }
-            }
-
-            if (found)
-            {
-                firstWhitePixel = new Rectangle(foundX, foundY, cropWidth, cropHeight);
-                return new Mat(monoImage, firstWhitePixel);
-            }
-            else
-            {
-                return monoImage;
-            }
-        }
-
-        private void ProcessCroppedImage1(Mat cropped)
-        {
-            lastHit3 = "";
-            Image<Bgr, Byte> img = cropped.ToImage<Bgr, Byte>();
-
-            // RGBの下限と上限を設定
-            var lowerBound = new Bgr(140, 140, 140); // RGBそれぞれ200以上
-            var upperBound = new Bgr(255, 255, 255); // 白の範囲
-
-            // マスクを作成 (範囲内のピクセルが白、それ以外が黒)
-            Image<Gray, Byte> mask = img.InRange(lowerBound, upperBound);
-
-            // マスクを適用して白黒画像を作成
-            Image<Bgr, Byte> result = img.CopyBlank();
-            result.SetValue(new Bgr(255, 255, 255), mask);
-
-            using (Mat resultMat1 = result.Mat)
-            {
-                using (Mat trimmed = TrimFirstPixel(resultMat1, 100, 45))
-                {
-                     SaveMatAsImage(trimmed, 2);
-
-                    if (trimmed.Width == 100 && trimmed.Height == 45)
-                    {
-                        
-                        foreach (var entry in templateCache2)
-                        {
-                            string templateFile = entry.Key;
-                            Mat template = entry.Value;
-
-                            using (Mat resultMat = new Mat())
-                            {
-                                // テンプレートマッチングを実行
-                                CvInvoke.MatchTemplate(trimmed, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
-
-                                // 一致率を計算
-                                double minVal = 0, maxVal = 0;
-                                Point minLoc = new Point(), maxLoc = new Point();
-                                CvInvoke.MinMaxLoc(resultMat, ref minVal, ref maxVal, ref minLoc, ref maxLoc);
-
-                                // 一致率をパーセンテージに変換
-                                double matchPercentage = maxVal * 100.0;
-
-                                // 現在の一致率がこれまでの最高値を超える場合のみ更新
-                                if (matchPercentage > highestMatchPercentage[1])
-                                {
-                                    highestMatchPercentage[1] = matchPercentage;
-                                    highestMatchImageNames[1] = Path.GetFileName(templateFile); // 画像名を保存
-                                }
-
-                                if (matchPercentage >= 80)
-                                {
-                                    Console.WriteLine($"2Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
-                                    lastHit3 = Path.GetFileName(templateFile);
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-
-            Rectangle[] areas = {
-                new Rectangle(0, 0, 60, 60),
-                new Rectangle(43, 0, 60, 60),
-                new Rectangle(87, 0, 60, 60),
-            };
-
-            // 各領域に対してトリミングを行い、異なるPictureBoxに表示
-            for (int i = 0; i < areas.Length; i++)
-            {
-                var area = areas[i];
-
-                result.ROI = area;
-
-                // Matに変換
-                using (Mat resultMat1 = result.Mat)
-                {
-                    
-                    using (Mat trimmed = TrimFirstPixel(resultMat1, 26, 40))
-                    {
-                        if (trimmed.Width == 26 && trimmed.Height == 40)
-                        {
-                            bool matched = false;
-                            foreach (var entry in NumberCache)
-                            {
-                                string templateFile = entry.Key;
-                                Mat template = entry.Value;
-
-                                using (Mat resultMat = new Mat())
-                                {
-                                    // テンプレートマッチングを実行
-                                    CvInvoke.MatchTemplate(trimmed, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
-
-                                    // 一致率を計算
-                                    double minVal = 0, maxVal = 0;
-                                    Point minLoc = new Point(), maxLoc = new Point();
-                                    CvInvoke.MinMaxLoc(resultMat, ref minVal, ref maxVal, ref minLoc, ref maxLoc);
-
-                                    // 一致率をパーセンテージに変換
-                                    double matchPercentage = maxVal * 100.0;
-
-
-                                    if (matchPercentage >= 93.5)
-                                    {
-                                        Console.WriteLine($"Number10 {i} with {Path.GetFileName(templateFile)}: {matchPercentage}%");
-                                        string templateFileName = Path.GetFileNameWithoutExtension(templateFile);
-                                        string normalizedTemplate = templateFileName.Split('_')[0]; // "_"以降を除去してベース番号を取得
-                                        matchResults2[i] = int.Parse(normalizedTemplate);
-                                        matched = true;
-                                    }
-                                }
-                            }
-
-                            if (!matched)
-                            {
-                                matchResults2[i] = -1;
-                            }
-
-                            if (frameCounter % 2 == 0)
-                            {
-                                //pictureBox.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", System.Drawing.Imaging.ImageFormat.Png);
-                            }
-                        }
-                    }
-                }
-            }
-
-            //result.ROI = Rectangle.Empty;
-
-            // 5回に1回画像を保存
-        }
-
+ 
         private void pictureBox1_Click(object sender, EventArgs e)
         {
 
@@ -1720,10 +755,7 @@ namespace WindowsFormsApp1
         {
             if (!_ConsoleWindow.ShowConsole())
             {
-                if (TurnIndex >= 3)
-                {
-                    runSearch();
-                }
+               runSearch();
             }
         }
 
@@ -1736,6 +768,15 @@ namespace WindowsFormsApp1
             {
                 _ConsoleWindow.Close();
                 _ConsoleWindow.Dispose();
+            }
+            if(ActiveBoss != null)
+            {
+                ActiveBoss.Dispose();
+            }
+            bossTemplates.Clear();
+            if(_matcher1 != null)
+            {
+                _matcher1.Dispose();
             }
         }
     }
