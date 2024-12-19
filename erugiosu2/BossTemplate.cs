@@ -15,14 +15,16 @@ namespace erugiosu2
         public Func<IRecognitionBoss> BossFactory { get; set; }
         public string IcopPath { get; set; } // リソースディレクトリ
         int BackgroundID { get; } // ボスの名前
+        public Rectangle AwararePos { get; private set; }
 
-        public BossTemplate(string name, Func<IRecognitionBoss> bossFactory, string template_name, string icopPath, int backgroundID)
+        public BossTemplate(string name, Func<IRecognitionBoss> bossFactory, string template_name, string icopPath, int backgroundID, Rectangle awarePos)
         {
             Name = name;
             BossFactory = bossFactory;
             Template_name = template_name;
             IcopPath = icopPath;
             BackgroundID = backgroundID;
+            AwararePos = awarePos;
         }
 
         public bool IsActive() => active;

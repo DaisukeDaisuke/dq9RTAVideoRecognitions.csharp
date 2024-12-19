@@ -343,7 +343,8 @@ namespace WindowsFormsApp1
                 () => new neko2(resourceDir, actionManager), // パスを渡すファクトリ関数
                 "neko2_template",
                  Path.Combine(resourceDir, "neko", "Icon.ico"),
-                 2
+                 2,
+                 new Rectangle(420, 645, 200, 70)
             );
 
             // リストに追加
@@ -475,7 +476,7 @@ namespace WindowsFormsApp1
                                 {
                                     if (entry.Match(_matcher1.MatchResults[0], tmp))
                                     {
-                                        using (Mat trimed2 = new Mat(frame, new Rectangle(420, 645, 200, 70)))
+                                        using (Mat trimed2 = new Mat(frame, entry.AwararePos))
                                         {
                                             _matcher1.ProcessImage(trimed2);
                                             if (_matcher1.MatchResults[0] != TemplateMatcher.NO_MATCH)

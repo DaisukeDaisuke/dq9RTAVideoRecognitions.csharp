@@ -117,7 +117,7 @@ namespace erugiosu2
         public const int KACRACKLE_SLASH = 56;// マヒャド斬り
         public const int HATCHET_MAN = 57;// 魔人切り
         public const int UPWARD_SLICE = 58;// 切り上げ
-
+        public const int MULTISLASH = 59;//さみだれ斬り
 
 
 
@@ -222,6 +222,7 @@ namespace erugiosu2
         { KACRACKLE_SLASH, "マヒャド斬り" },
         { HATCHET_MAN, "魔人切り" },
         { UPWARD_SLICE, "切り上げ" },
+        { MULTISLASH, "さみだれ斬り" },
     };
 
         public static string GetActionName(int actionId) =>
