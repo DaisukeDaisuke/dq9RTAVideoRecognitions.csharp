@@ -27,14 +27,6 @@ namespace erugiosu2
                 return;
             }
 
-            // 管理者権限チェック
-            if (IsAdministrator())
-            {
-                MessageBox.Show("アプリケーションを管理者権限で実行しないでください。dllフォルダにある画像認識で使われる大量の依存関係が管理者権限で安全かどうか保証できません。この保護を無効化するには作者に問い合わせてください。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Environment.Exit(1); // エラーメッセージを表示して終了
-                return;
-            }
-
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
             AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
 
