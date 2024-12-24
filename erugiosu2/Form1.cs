@@ -919,21 +919,6 @@ namespace WindowsFormsApp1
                 int seconds = int.Parse(match.Groups[3].Value);
                 int milliseconds = int.Parse(match.Groups[4].Value);
 
-                // 秒数を正規化
-                seconds += milliseconds / 100; // ミリ秒を秒に変換
-                if (seconds >= 60)
-                {
-                    minutes += seconds / 60;
-                    seconds %= 60;
-                }
-
-                // 分数を正規化
-                if (minutes >= 60)
-                {
-                    hours += minutes / 60;
-                    minutes %= 60;
-                }
-
                 // 正規化された形式で出力
                 return $"{hours} {minutes} {seconds}";
             }
