@@ -47,6 +47,7 @@ namespace WindowsFormsApp1
         private int ActionIndex = 0;
         private int TurnIndex = 0;
         private int maybeCritical = -1;
+        private bool slept = false; 
         private DateTime LastDetection = DateTime.Now;
         // グローバルスコープで一致率の最も高い画像名と一致率を格納する変数を定義
         double[] highestMatchPercentage = new double[3] { 0, 0, 0 };
@@ -202,6 +203,7 @@ namespace WindowsFormsApp1
                     Sleeping = false;
                     preAction = -1;
                     maybeCritical = -1;
+                    slept = false;
                     UpdateOutputText("");
                     await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
                     
@@ -236,6 +238,7 @@ namespace WindowsFormsApp1
                     //NeedDamage1 = -1;
                     maybeCritical = -1;
                     UpdateDamage(turnind, actionid, 0);
+                    preAction = -1;
                 }
                 
                 if (damageTest1 != -1)
@@ -245,6 +248,7 @@ namespace WindowsFormsApp1
                     int actionid = (NeedDamage1 >> 12) & 0xf;
                     UpdateDamage(turnind, actionid, damageTest1);
                     NeedDamage1Enabled = false;
+                    preAction = -1;
                     //NeedDamage1 = -1;
                 }
                 else
@@ -258,6 +262,7 @@ namespace WindowsFormsApp1
                         NeedDamage1Enabled = false;
                         //NeedDamage1 = -1;
                         UpdateDamage(turnind, actionind, damageTest2);
+                        preAction = -1;
                     }
                 }
                 return;
@@ -281,6 +286,7 @@ namespace WindowsFormsApp1
                     maybeCritical = -1;
                     lastdamage2 = -1;
                     UpdateDamage(turnind, actionind, 0);
+                    preAction = -1;
                 }
                 if (damageTest2 != -1)
                 {
@@ -290,6 +296,7 @@ namespace WindowsFormsApp1
                     //NeedDamage2 = -1;
                     lastdamage2 = damageTest2;
                     UpdateDamage(turnind, actionind, damageTest2);
+                    preAction = -1;
                 }
                 else
                 {
@@ -301,6 +308,7 @@ namespace WindowsFormsApp1
                         lastdamage2 = damageTest1;
                         //NeedDamage2 = -1;
                         UpdateDamage(turnind, actionid, damageTest1);
+                        preAction = -1;
                     }
                 }
                 return;
@@ -468,21 +476,23 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
             }
 
-            if (Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex != 0 && !ActionTaken)
+            if (!slept && Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex != 0 && !ActionTaken)
             {
                 action = BattleAction.TURN_SKIPPED;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
                 ActionTaken = true;
                 Sleeping = false;
+                slept = true;
             }
-            else if (Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex == 0 && !ActionTaken)
+            else if (!slept && Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex == 0 && !ActionTaken)
             {
                 action = BattleAction.CURE_SLEEPING;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
                 ActionTaken = true;
                 Sleeping = false;
+                slept = true;
             }
 
             if (lastHit1 == "Paralysis.png") 
@@ -493,13 +503,14 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if(lastHit1 == "sleeping2.png"&&lastHit2 == "" && lastHit3 == "")
+            if(!slept && lastHit1 == "sleeping2.png"&&lastHit2 == "" && lastHit3 == "")
             {
                 action = BattleAction.SLEEPING;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
                 ActionTaken = true;
                 Sleeping = true;
+                slept = true;
             }
 
             if (lastHit1 == "sleeping2.png" && ( lastHit3 == "dead.png" || lastHit3 == "dead2.png"))
@@ -527,8 +538,9 @@ namespace WindowsFormsApp1
 
             if(lastHit1 == "ano.png")
             {
-                preAction = 0;
+                preAction = -1;
                 ActionTaken = true;
+                slept = false;
             }
 
             if(lastHit1 == "sage.png")
@@ -589,8 +601,13 @@ namespace WindowsFormsApp1
                 // LastDetectionは1秒以上前です
                 if (lastHit1 == "")
                 {
-                    preAction = 0;
+                    preAction = -1;
                 }
+            }
+
+            if ((currentTime - LastDetection).TotalSeconds > 3)
+            {
+                slept = false;
             }
             
            
