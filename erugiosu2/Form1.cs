@@ -152,13 +152,8 @@ namespace WindowsFormsApp1
                 actionIndex < battleLog[participantId].Count)
             {
                 var action = battleLog[participantId][actionIndex];
-
-                // ダメージが未確定の場合のみ更新
-                if (action.IsDamagePending)
-                {
-                    action.Damage = damage;
-                }
-
+                action.Damage = damage;
+               
                 dataGridView1.Rows[participantId].Cells[actionIndex * 2 + 2].Value = damage;
 
                 if (participantId >= 4 && actionIndex == 2 && !flag)
@@ -169,7 +164,7 @@ namespace WindowsFormsApp1
                 updateText1();
 
                 var action1 = battleLog[participantId][actionIndex].Action;
-                if (action1 == BattleAction.ATTACK_ENEMY || action1 == BattleAction.CRITICAL_ATTACK || action1 == BattleAction.LIGHTNING_STORM || action1 == BattleAction.ULTRA_HIGH_SPEED_COMBO) {
+                if (action1 == BattleAction.ATTACK_ENEMY || action1 == BattleAction.CRITICAL_ATTACK || action1 == BattleAction.LIGHTNING_STORM || action1 == BattleAction.ULTRA_HIGH_SPEED_COMBO || action1 == BattleAction.SKY_ATTACK) {
                     if (Sleeping && (ActionTaken || actionIndex == 2))
                     {
                         Sleeping = false;
@@ -205,6 +200,8 @@ namespace WindowsFormsApp1
                     ActionTaken = false;
                     flag = false;
                     Sleeping = false;
+                    preAction = -1;
+                    maybeCritical = -1;
                     UpdateOutputText("");
                     await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
                     
@@ -528,6 +525,19 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
+            if(lastHit1 == "ano.png")
+            {
+                preAction = 0;
+                ActionTaken = true;
+            }
+
+            if(lastHit1 == "sage.png")
+            {
+                action = BattleAction.SAGE_ELIXIR;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+                ActionTaken = true;
+            }
 
             if (action != -1&&action != preAction && (lastHit1 != "" || lastHit2 != ""))
             {
@@ -1182,8 +1192,9 @@ namespace WindowsFormsApp1
 
                         if (frameCounter % 2 == 0)
                         {
-                            
+
                             //pictureBox2.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
+                            SaveMatAsImage(trimmed, 1);
                         }
                     }
                 }
@@ -1265,7 +1276,7 @@ namespace WindowsFormsApp1
             using (Bitmap bmp = trimmed.ToBitmap())
             {
                 // 画像をPNG形式で保存
-                bmp.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}_{i}.png", ImageFormat.Png);
+                bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
             }
 #endif
         }
