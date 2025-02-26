@@ -495,12 +495,13 @@ namespace WindowsFormsApp1
                 slept = true;
             }
 
-            if (lastHit1 == "Paralysis.png") 
+            if (!slept && lastHit1 == "Paralysis.png" && lastHit2 != "Paralysis2.png") 
             {
                 action = BattleAction.PARALYSIS;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
                 ActionTaken = true;
+                slept = true;
             }
 
             if(!slept && lastHit1 == "sleeping2.png"&&lastHit2 == "" && lastHit3 == "")
@@ -605,7 +606,7 @@ namespace WindowsFormsApp1
                 }
             }
 
-            if ((currentTime - LastDetection).TotalSeconds > 3)
+            if ((currentTime - LastDetection).TotalSeconds > 4)
             {
                 slept = false;
             }
@@ -1139,7 +1140,7 @@ namespace WindowsFormsApp1
 
                         if (frameCounter % 2 == 0)
                         {
-                            //SaveMatAsImage(trimmed, 1);
+                            SaveMatAsImage(trimmed, 2);
                             //pictureBox4.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
                         }
                     }
