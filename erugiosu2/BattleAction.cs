@@ -125,7 +125,7 @@ namespace erugiosu2
 
         private static readonly Dictionary<int, string> hasDamageActions = new()
     {
-        { ATTACK_ENEMY, "攻撃" },
+        { ATTACK_ENEMY, "攻撃(敵)" },
         { ULTRA_HIGH_SPEED_COMBO, "超高速連打" },
         { SKY_ATTACK, "上空から攻撃" },
         { CRITICAL_ATTACK, "痛恨" },
@@ -133,7 +133,7 @@ namespace erugiosu2
         { FREEZING_BLIZZARD, "凍える吹雪" },
         { MERA_ZOMA, "メラゾーマ" },
         { MULTITHRUST, "さみだれ" },
-        { ATTACK_ALLY, "攻撃" },
+        { ATTACK_ALLY, "攻撃(味方)" },
         { LIGHTNING_STORM, "ジゴスパ" },
         { MAGIC_BURST, "マダンテ" },
         { MERCURIAL_THRUST, "しっぷう突き" },
@@ -155,7 +155,7 @@ namespace erugiosu2
         { MIDHEAL, "ベホイミ" },
         { DOUBLE_UP, "すてみ" },
         { MULTITHRUST, "さみだれ" },
-        { ATTACK_ALLY, "攻撃" },
+        { ATTACK_ALLY, "攻撃(味方)" },
         { HEAL, "ホイミ" },
         { DEFENCE, "防御" },
         { MAGIC_MIRROR, "ミラーシールド" },
@@ -175,7 +175,7 @@ namespace erugiosu2
         private static readonly Dictionary<int, string> actionNames = new()
     {
         { BUFF, "スカラ" },
-        { ATTACK_ENEMY, "攻撃" },
+        { ATTACK_ENEMY, "攻撃(敵)" },
         { PARALYSIS, "麻痺で動けない" },
         { CURE_PARALYSIS, "麻痺回復" },
         { ULTRA_HIGH_SPEED_COMBO, "超高速連打" },
@@ -191,7 +191,7 @@ namespace erugiosu2
         { MERA_ZOMA, "メラゾーマ" },
         { DOUBLE_UP, "すてみ" },
         { MULTITHRUST, "さみだれ" },
-        { ATTACK_ALLY, "攻撃" },
+        { ATTACK_ALLY, "攻撃(味方)" },
         { HEAL, "ホイミ" },
         { DEFENCE, "防御" },
         { MAGIC_MIRROR, "ミラーシールド" },

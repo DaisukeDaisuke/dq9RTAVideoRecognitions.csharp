@@ -522,11 +522,12 @@ namespace WindowsFormsApp1
                 slept = true;
             }
 
-            if (lastHit1 == "sleeping2.png" && ( lastHit3 == "dead.png" || lastHit3 == "dead2.png"))
+            if (!ActionTaken && lastHit1 == "sleeping2.png" && ( lastHit3 == "dead.png" || lastHit3 == "dead2.png"))
             {
                 action = BattleAction.DEAD;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
+                ActionTaken = true;
             }
 
             if(lastHit1 == "song.png")
@@ -560,7 +561,15 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if (action != -1&&action != preAction && (lastHit1 != "" || lastHit2 != ""))
+            if(!ActionTaken && lastHit3 == "a_attack.png" && lastHit2 != "uhsc.png" && lastHit1 != "guard.png")
+            {
+                action = BattleAction.ATTACK_ALLY;
+                NeedDamage1 = (ActionIndex << 12) | TurnIndex;
+                NeedDamage2 = -1;
+                ActionTaken = true;
+            }
+
+            if (action != -1&&action != preAction && (lastHit1 != "" || lastHit2 != "" || lastHit3 != ""))
             {
                 NeedDamage1Enabled = NeedDamage1 != -1;
                 NeedDamage2Enabled = NeedDamage2 != -1;
@@ -1215,14 +1224,15 @@ namespace WindowsFormsApp1
                                 //SaveMatAsImage(trimmed, 1);
                             }
                         }
-
                         if (frameCounter % 2 == 0)
                         {
 
                             //pictureBox2.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
-                            SaveMatAsImage(trimmed, 1);
+                            //SaveMatAsImage(trimmed, 1);
                         }
+
                     }
+  
                 }
             }
 
@@ -1274,6 +1284,8 @@ namespace WindowsFormsApp1
                                         matchResults1[i] = int.Parse(normalizedTemplate);
                                         matched = true;
                                         Console.WriteLine($"Number20 {i} with {Path.GetFileName(templateFile)}: {matchPercentage}%");
+
+                                      
                                     }
                                 }
                             }
@@ -1285,7 +1297,7 @@ namespace WindowsFormsApp1
 
                             if (frameCounter % 10 == 0)
                             {
-                                //SaveMatAsImage(trimmed, i);
+                                //SaveMatAsImage(trimmed, i+10);
                             }
                         }
                     }
@@ -1403,7 +1415,7 @@ namespace WindowsFormsApp1
             {
                 using (Mat trimmed = TrimFirstPixel(resultMat1, 100, 45))
                 {
-                     SaveMatAsImage(trimmed, 2);
+                     //SaveMatAsImage(trimmed, 2);
 
                     if (trimmed.Width == 100 && trimmed.Height == 45)
                     {
