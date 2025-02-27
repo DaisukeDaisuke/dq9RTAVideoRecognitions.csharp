@@ -495,7 +495,15 @@ namespace WindowsFormsApp1
                 slept = true;
             }
 
-            if (!slept && lastHit1 == "Paralysis.png" && lastHit2 != "Paralysis2.png") 
+            if(!slept && lastHit1 == "Paralysis.png" && lastHit3 == "CareParalysis.png")
+            {
+                action = BattleAction.CURE_PARALYSIS;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+                ActionTaken = true;
+                slept = true;
+            }
+            else if (!slept && lastHit1 == "Paralysis.png" && lastHit2 != "Paralysis2.png")
             {
                 action = BattleAction.PARALYSIS;
                 NeedDamage1 = -1;
