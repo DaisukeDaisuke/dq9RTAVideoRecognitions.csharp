@@ -1438,7 +1438,6 @@ namespace WindowsFormsApp1
             
             // マスクを適用して白黒画像を作成
             Image<Bgr, Byte> result = img.CopyBlank();
-
             result.SetValue(new Bgr(255, 255, 255), mask);
 
             using (Mat resultMat1 = result.Mat)
