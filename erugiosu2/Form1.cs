@@ -1349,7 +1349,7 @@ namespace WindowsFormsApp1
 
             for (int y = 0; y < resultMat1.Height; y++)
             {
-                 for (int x = 0; x < resultMat1.Width; x++)
+                for (int x = 0; x < resultMat1.Width; x++)
                 {
                     var color = tmp[y, x];
                     // 白色のピクセルを判定
@@ -1402,8 +1402,11 @@ namespace WindowsFormsApp1
 
             if (found)
             {
-                firstWhitePixel = new Rectangle(foundX, foundY, cropWidth, cropHeight);
-                return new Mat(monoImage, firstWhitePixel);
+                using (monoImage)
+                {
+                    firstWhitePixel = new Rectangle(foundX, foundY, cropWidth, cropHeight);
+                    return new Mat(monoImage, firstWhitePixel);
+                }
             }
             else
             {
