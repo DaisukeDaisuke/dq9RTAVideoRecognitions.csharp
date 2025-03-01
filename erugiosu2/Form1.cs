@@ -52,6 +52,8 @@ namespace WindowsFormsApp1
         // グローバルスコープで一致率の最も高い画像名と一致率を格納する変数を定義
         double[] highestMatchPercentage = new double[3] { 0, 0, 0 };
         string[] highestMatchImageNames = new string[3] { "", "", "" };
+        double[] highestNumberMatchPercentage1 = new double[3] { 0, 0, 0 };
+        double[] highestNumberMatchPercentage2 = new double[3] { 0, 0, 0 };
         private int marginX = 25;
         private int marginY = 205;
         private bool flag = false;
@@ -115,7 +117,7 @@ namespace WindowsFormsApp1
                 dataGridView1.Rows.Add();
                 // 一番下の行にスクロール
                 dataGridView1.FirstDisplayedScrollingRowIndex = dataGridView1.RowCount - 1;
-                dataGridView1.Rows[participantId].Cells[0].Value = participantId.ToString();
+                dataGridView1.Rows[participantId].Cells[0].Value = (participantId + 1).ToString();
             }
 
             // ダメージが不明の状態で行動を記録
@@ -556,6 +558,14 @@ namespace WindowsFormsApp1
             if(lastHit1 == "sage.png")
             {
                 action = BattleAction.SAGE_ELIXIR;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+                ActionTaken = true;
+            }
+
+            if(lastHit1 == "elven.png")
+            {
+                action = BattleAction.ELFIN_ELIXIR;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
                 ActionTaken = true;
@@ -1228,7 +1238,7 @@ namespace WindowsFormsApp1
                         {
 
                             //pictureBox2.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
-                            //SaveMatAsImage(trimmed, 1);
+                            SaveMatAsImage(trimmed, 1);
                         }
 
                     }
@@ -1242,6 +1252,10 @@ namespace WindowsFormsApp1
                 new Rectangle(55, 0, 60, 60),
                 new Rectangle(105, 0, 60, 60),
             };
+
+            highestNumberMatchPercentage1[0] = 0.0;
+            highestNumberMatchPercentage1[1] = 0.0;
+            highestNumberMatchPercentage1[2] = 0.0;
 
             // 各領域に対してトリミングを行い、異なるPictureBoxに表示
             for (int i = 0; i < areas.Length; i++)
@@ -1277,15 +1291,17 @@ namespace WindowsFormsApp1
                                     double matchPercentage = maxVal * 100.0;
 
 
-                                    if (matchPercentage >= 93.5)
+                                    if (matchPercentage >= 93.5 && highestNumberMatchPercentage2[i] <= matchPercentage)
                                     {
                                         string templateFileName = Path.GetFileNameWithoutExtension(templateFile);
                                         string normalizedTemplate = templateFileName.Split('_')[0]; // "_"以降を除去してベース番号を取得
                                         matchResults1[i] = int.Parse(normalizedTemplate);
                                         matched = true;
                                         Console.WriteLine($"Number20 {i} with {Path.GetFileName(templateFile)}: {matchPercentage}%");
+                                        highestNumberMatchPercentage1[i] = matchPercentage;
 
-                                      
+
+
                                     }
                                 }
                             }
@@ -1463,6 +1479,10 @@ namespace WindowsFormsApp1
                 new Rectangle(87, 0, 60, 60),
             };
 
+            highestNumberMatchPercentage2[0] = 0.0;
+            highestNumberMatchPercentage2[2] = 0.0;
+            highestNumberMatchPercentage2[1] = 0.0;
+
             // 各領域に対してトリミングを行い、異なるPictureBoxに表示
             for (int i = 0; i < areas.Length; i++)
             {
@@ -1498,12 +1518,13 @@ namespace WindowsFormsApp1
                                     double matchPercentage = maxVal * 100.0;
 
 
-                                    if (matchPercentage >= 93.5)
+                                    if (matchPercentage >= 93.5 && highestNumberMatchPercentage2[i] <= matchPercentage)
                                     {
                                         Console.WriteLine($"Number10 {i} with {Path.GetFileName(templateFile)}: {matchPercentage}%");
                                         string templateFileName = Path.GetFileNameWithoutExtension(templateFile);
                                         string normalizedTemplate = templateFileName.Split('_')[0]; // "_"以降を除去してベース番号を取得
                                         matchResults2[i] = int.Parse(normalizedTemplate);
+                                        highestNumberMatchPercentage2[i] = matchPercentage;
                                         matched = true;
                                     }
                                 }
