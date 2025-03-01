@@ -1173,6 +1173,10 @@ namespace WindowsFormsApp1
                     }
                 }
             }
+
+            img.Dispose();
+            mask.Dispose();
+            result.Dispose();
         }
 
         private void ProcessCroppedImage(Mat cropped)
@@ -1319,6 +1323,10 @@ namespace WindowsFormsApp1
                     }
                 }
             }
+
+            img.Dispose();
+            mask.Dispose();
+            result.Dispose();
         }
 
 
@@ -1345,72 +1353,74 @@ namespace WindowsFormsApp1
             int foundX = 0, foundY = 0;
             Mat monoImage = new Mat();
             CvInvoke.CvtColor(resultMat1, monoImage, Emgu.CV.CvEnum.ColorConversion.Bgr2Gray);
-            Image<Bgr, byte> tmp = resultMat1.ToImage<Bgr, byte>();
-
-            for (int y = 0; y < resultMat1.Height; y++)
+            using (Image<Bgr, byte> tmp = resultMat1.ToImage<Bgr, byte>())
             {
-                for (int x = 0; x < resultMat1.Width; x++)
-                {
-                    var color = tmp[y, x];
-                    // 白色のピクセルを判定
-                    if (color.Blue >= 200 && color.Green >= 200 && color.Red >= 200)
-                    {
-                        //cropWidth = Math.Min(xSize, resultMat1.Width - x);
-                        found1 = true;
-                        foundX = x;
-                        foundY = y;
-                        break;
-                    }
-                }
-                if (found1)
-                {
-                    break; // 外側のループも抜ける
-                }
-            }
 
-            if (found1)
-            {
-                for (int x = 0; x < resultMat1.Width; x++)
+                for (int y = 0; y < resultMat1.Height; y++)
                 {
-                    for (int y = 0; y < resultMat1.Height; y++)
+                    for (int x = 0; x < resultMat1.Width; x++)
                     {
-
-                        // ピクセルの色を取得
                         var color = tmp[y, x];
-
                         // 白色のピクセルを判定
                         if (color.Blue >= 200 && color.Green >= 200 && color.Red >= 200)
                         {
-
-                            foundX = Math.Min(foundX, x);
-                            foundY = Math.Min(foundY, y);
-
-                            cropHeight = Math.Min(ySize, resultMat1.Height - foundY); // y座標から画像の下端までの距離を超えない
-                            cropWidth = Math.Min(xSize, resultMat1.Width - foundX); // y座標から画像の下端までの距離を超えない
-
-                            // 白ピクセルの位置を基準に、切り取り領域を設定
-                            found = true;
-                            break; // 白ピクセルを見つけたらループを抜ける
+                            //cropWidth = Math.Min(xSize, resultMat1.Width - x);
+                            found1 = true;
+                            foundX = x;
+                            foundY = y;
+                            break;
                         }
                     }
-                    if (found)
+                    if (found1)
                     {
                         break; // 外側のループも抜ける
                     }
                 }
-            }
 
-            if (found)
-            {
-                using (monoImage)
+                if (found1)
                 {
-                    firstWhitePixel = new Rectangle(foundX, foundY, cropWidth, cropHeight);
-                    return new Mat(monoImage, firstWhitePixel);
+                    for (int x = 0; x < resultMat1.Width; x++)
+                    {
+                        for (int y = 0; y < resultMat1.Height; y++)
+                        {
+
+                            // ピクセルの色を取得
+                            var color = tmp[y, x];
+
+                            // 白色のピクセルを判定
+                            if (color.Blue >= 200 && color.Green >= 200 && color.Red >= 200)
+                            {
+
+                                foundX = Math.Min(foundX, x);
+                                foundY = Math.Min(foundY, y);
+
+                                cropHeight = Math.Min(ySize, resultMat1.Height - foundY); // y座標から画像の下端までの距離を超えない
+                                cropWidth = Math.Min(xSize, resultMat1.Width - foundX); // y座標から画像の下端までの距離を超えない
+
+                                // 白ピクセルの位置を基準に、切り取り領域を設定
+                                found = true;
+                                break; // 白ピクセルを見つけたらループを抜ける
+                            }
+                        }
+                        if (found)
+                        {
+                            break; // 外側のループも抜ける
+                        }
+                    }
                 }
-            }
-            else
-            {
-                return monoImage;
+
+                if (found)
+                {
+                    using (monoImage)
+                    {
+                        firstWhitePixel = new Rectangle(foundX, foundY, cropWidth, cropHeight);
+                        return new Mat(monoImage, firstWhitePixel);
+                    }
+                }
+                else
+                {
+                    return monoImage;
+                }
             }
         }
 
@@ -1425,9 +1435,10 @@ namespace WindowsFormsApp1
 
             // マスクを作成 (範囲内のピクセルが白、それ以外が黒)
             Image<Gray, Byte> mask = img.InRange(lowerBound, upperBound);
-
+            
             // マスクを適用して白黒画像を作成
             Image<Bgr, Byte> result = img.CopyBlank();
+
             result.SetValue(new Bgr(255, 255, 255), mask);
 
             using (Mat resultMat1 = result.Mat)
@@ -1550,6 +1561,10 @@ namespace WindowsFormsApp1
             //result.ROI = Rectangle.Empty;
 
             // 5回に1回画像を保存
+
+            img.Dispose();
+            mask.Dispose();
+            result.Dispose();
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
