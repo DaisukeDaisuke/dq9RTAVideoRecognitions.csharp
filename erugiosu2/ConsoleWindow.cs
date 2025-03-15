@@ -215,6 +215,7 @@ namespace erugiosu2
             {
                 _allLines.Clear();
                 _allLinesBackup.Clear();
+                _turnIndexMap.Clear();
                 _allLines.Add("Console has been reset");
                 _allLinesBackup.Add("Console has been reset");
                 _consoleOutput.Text = "Console has been reset";
@@ -248,7 +249,7 @@ namespace erugiosu2
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing1)
+            if (disposing1 && disposing)
             {
                 disposing1 = true;
                 _consoleOutput?.Dispose();
