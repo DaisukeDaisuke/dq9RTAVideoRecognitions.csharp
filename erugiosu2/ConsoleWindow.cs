@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -15,6 +16,8 @@ namespace erugiosu2
         private Dictionary<int, int> _turnIndexMap = new Dictionary<int, int>(); // ターン番号 → 行インデックス
         private bool show = true;
         private bool disposing1 = false;
+        private int _lastline = 0;
+        private int _lastlineindex = 0;
 
         public ConsoleWindow()
         {
@@ -75,6 +78,7 @@ namespace erugiosu2
 
                 _consoleOutput.SelectionStart = 0; // 左端にリセット
                 _consoleOutput.ScrollToCaret();
+                _lastlineindex = _allLines.Count - 1;
 
                 Match m = Regex.Match(text, @"^(\d+)(\s+)(.*)$");
                 if (m.Success)
@@ -141,58 +145,57 @@ namespace erugiosu2
                     _allLines[index] = newLine;
                     _consoleOutput.Text = string.Join(Environment.NewLine, _allLines);
                     // 初回は0行目固定、10ターン目以降のみ自動スクロールする
-                    if (turn >= 7)
-                    {
-                        // 現在の表示領域の先頭行を取得
-                        int firstVisibleLine = _consoleOutput.GetLineFromCharIndex(
-                            _consoleOutput.GetCharIndexFromPosition(new Point(0, 0)));
+                    //if (turn >= 7)
+                    //{
+                    //    // 現在の表示領域の先頭行を取得
+                    //    int firstVisibleLine = _consoleOutput.GetLineFromCharIndex(
+                    //        _consoleOutput.GetCharIndexFromPosition(new Point(0, 0)));
 
-                        if (firstVisibleLine <= 0)// 一番下にスクロールしてるとなぜか0になる。なぜか勝手に一番上にスクロールするおまけつき
-                        {
-                            _consoleOutput.SelectionStart = _consoleOutput.Text.Length;
-                            _consoleOutput.ScrollToCaret();
-                            return;
-                        }
+                    //    // 更新した行が下端近くなら1行分下へスクロール
+                    //    int updatedLine = _consoleOutput.GetLineFromCharIndex(
+                    //        _consoleOutput.GetFirstCharIndexFromLine(index));
+                    //    int lastVisibleLine = _lastlineindex;
 
-                        // 表示可能な行数を算出
-                        int visibleLines = _consoleOutput.ClientSize.Height / _consoleOutput.Font.Height;
-                        int lastVisibleLine = firstVisibleLine + visibleLines - 1;
-                        // 更新した行が下端近くなら1行分下へスクロール
-                        int updatedLine = _consoleOutput.GetLineFromCharIndex(
-                            _consoleOutput.GetFirstCharIndexFromLine(index));
+                    //    int visibleLines = _consoleOutput.ClientSize.Height / _consoleOutput.Font.Height;
+                    //    int lastVisibleLine1 = firstVisibleLine + visibleLines - 1;
 
-                        if (updatedLine <= 7)
-                        {
-                            return;
-                        }
+                    //    if (firstVisibleLine == 0 && lastVisibleLine1 <= visibleLines)
+                    //    {
+                    //        //今一番上にいる
+                    //        _consoleOutput.SelectionStart = 0;
+                    //        _consoleOutput.ScrollToCaret();
+                    //        _lastline = 0;
+                    //        return;
+                    //    }
+                    //    if (firstVisibleLine == 0)
+                    //    {
+                    //        //今一番下にいる
+                    //        _consoleOutput.SelectionStart = _lastline;
+                    //        _consoleOutput.ScrollToCaret();
+                    //        return;
+                    //    }
 
-                        // TextBox の全行数を取得
-                        int totalLines = _consoleOutput.Lines.Length;
-                        // 更新対象の行 index が全体の下から3行以内なら、末尾へスクロール
-                        if (updatedLine >= totalLines - 3)
-                        {
-                            _consoleOutput.SelectionStart = _consoleOutput.Text.Length;
-                            _consoleOutput.ScrollToCaret();
-                            return;
-                        }
+                    //    lastVisibleLine = Math.Min(lastVisibleLine, lastVisibleLine1);
 
-                        if (updatedLine > (lastVisibleLine + 1))
-                        {
-                            int nextLine = updatedLine + 3;
-                            int nextLineCharIndex = _consoleOutput.GetFirstCharIndexFromLine(nextLine);
-                            if (nextLineCharIndex > 0)
-                            {
-                                _consoleOutput.SelectionStart = nextLineCharIndex;
-                                _consoleOutput.ScrollToCaret();
-                            }
-                        }
-                        else
-                        {
-                            _consoleOutput.SelectionStart = _consoleOutput.Text.Length;
-                            _consoleOutput.ScrollToCaret();
-                            return;
-                        }
-                    }
+                    //    if (updatedLine < lastVisibleLine - 3) {
+                    //        int nextLine = updatedLine + 3;
+                    //        int nextLineCharIndex = _consoleOutput.GetFirstCharIndexFromLine(nextLine);
+                    //        if (nextLineCharIndex > 0)
+                    //        {
+                    //            _consoleOutput.SelectionStart = nextLineCharIndex;
+                    //            _consoleOutput.ScrollToCaret();
+                    //            _lastline = nextLineCharIndex;
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        //今一番下にいる
+                    //        _consoleOutput.SelectionStart = _consoleOutput.Text.Length;
+                    //        _consoleOutput.ScrollToCaret();
+                    //        _lastline = _consoleOutput.Text.Length;
+                    //        return;
+                    //    }
+                    //}
 
                     // 更新後、ユーザーが選択していた状態を復元
                     // ※ただし、ユーザーが既にカーソルを移動させていた場合はそのままにするか、条件で制御する
@@ -219,6 +222,7 @@ namespace erugiosu2
                 _allLines.Add("Console has been reset");
                 _allLinesBackup.Add("Console has been reset");
                 _consoleOutput.Text = "Console has been reset";
+                _lastline = 0;
             }
         }
 
