@@ -136,7 +136,6 @@ namespace erugiosu2
                 Match m = Regex.Match(line, @"^\s+(\d+)(\s+)(.*)$");
                 if (m.Success)
                 {
-
                     // 更新前の選択状態を保存
                     int savedSelectionStart = _consoleOutput.SelectionStart;
                     int savedSelectionLength = _consoleOutput.SelectionLength;
@@ -144,59 +143,6 @@ namespace erugiosu2
                     string newLine = $"> {turn}" + m.Groups[2].Value + m.Groups[3].Value;
                     _allLines[index] = newLine;
                     _consoleOutput.Text = string.Join(Environment.NewLine, _allLines);
-                    // 初回は0行目固定、10ターン目以降のみ自動スクロールする
-                    //if (turn >= 7)
-                    //{
-                    //    // 現在の表示領域の先頭行を取得
-                    //    int firstVisibleLine = _consoleOutput.GetLineFromCharIndex(
-                    //        _consoleOutput.GetCharIndexFromPosition(new Point(0, 0)));
-
-                    //    // 更新した行が下端近くなら1行分下へスクロール
-                    //    int updatedLine = _consoleOutput.GetLineFromCharIndex(
-                    //        _consoleOutput.GetFirstCharIndexFromLine(index));
-                    //    int lastVisibleLine = _lastlineindex;
-
-                    //    int visibleLines = _consoleOutput.ClientSize.Height / _consoleOutput.Font.Height;
-                    //    int lastVisibleLine1 = firstVisibleLine + visibleLines - 1;
-
-                    //    if (firstVisibleLine == 0 && lastVisibleLine1 <= visibleLines)
-                    //    {
-                    //        //今一番上にいる
-                    //        _consoleOutput.SelectionStart = 0;
-                    //        _consoleOutput.ScrollToCaret();
-                    //        _lastline = 0;
-                    //        return;
-                    //    }
-                    //    if (firstVisibleLine == 0)
-                    //    {
-                    //        //今一番下にいる
-                    //        _consoleOutput.SelectionStart = _lastline;
-                    //        _consoleOutput.ScrollToCaret();
-                    //        return;
-                    //    }
-
-                    //    lastVisibleLine = Math.Min(lastVisibleLine, lastVisibleLine1);
-
-                    //    if (updatedLine < lastVisibleLine - 3) {
-                    //        int nextLine = updatedLine + 3;
-                    //        int nextLineCharIndex = _consoleOutput.GetFirstCharIndexFromLine(nextLine);
-                    //        if (nextLineCharIndex > 0)
-                    //        {
-                    //            _consoleOutput.SelectionStart = nextLineCharIndex;
-                    //            _consoleOutput.ScrollToCaret();
-                    //            _lastline = nextLineCharIndex;
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        //今一番下にいる
-                    //        _consoleOutput.SelectionStart = _consoleOutput.Text.Length;
-                    //        _consoleOutput.ScrollToCaret();
-                    //        _lastline = _consoleOutput.Text.Length;
-                    //        return;
-                    //    }
-                    //}
-
                     // 更新後、ユーザーが選択していた状態を復元
                     // ※ただし、ユーザーが既にカーソルを移動させていた場合はそのままにするか、条件で制御する
                     _consoleOutput.SelectionStart = savedSelectionStart;
