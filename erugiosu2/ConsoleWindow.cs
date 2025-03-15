@@ -190,7 +190,7 @@ namespace erugiosu2
                         {
                             _consoleOutput.SelectionStart = _consoleOutput.Text.Length;
                             _consoleOutput.ScrollToCaret();
-                            return;  
+                            return;
                         }
                     }
 
@@ -269,7 +269,7 @@ namespace erugiosu2
             base.Dispose(disposing);
         }
     }
-
+}
 
 public static class DictionaryExtensions {
     /// <summary>
