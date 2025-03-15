@@ -249,22 +249,26 @@ namespace erugiosu2
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing1 && disposing)
+            if (!disposing1) // すでにDisposeされているかチェック
             {
-                disposing1 = true;
-                _consoleOutput?.Dispose();
-                _consoleOutput = null;
+                disposing1 = true; // ここでフラグを立てる
+
+                if (disposing)
+                {
+                    // マネージドリソースの解放
+                    _consoleOutput?.Dispose();
+                    _consoleOutput = null;
+                }
+
+                // コレクションをクリア（nullにはしない）
                 _allLines.Clear();
-                _allLines = null;
                 _allLinesBackup.Clear();
-                _allLinesBackup = null;
                 _turnIndexMap.Clear();
-                _turnIndexMap = null;
             }
+
             base.Dispose(disposing);
         }
     }
-}
 
 
 public static class DictionaryExtensions {
