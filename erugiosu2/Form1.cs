@@ -46,6 +46,7 @@ namespace WindowsFormsApp1
         private int lastdamage2 = -1;
         private int ActionIndex = 0;
         private int TurnIndex = 0;
+        private int DisplayTurnIndex = 1;
         private int maybeCritical = -1;
         private bool slept = false; 
         private DateTime LastDetection = DateTime.Now;
@@ -61,6 +62,7 @@ namespace WindowsFormsApp1
 
         public bool updateText1()
         {
+            _ConsoleWindow.UpdateCurrentTurn(DisplayTurnIndex);
             UpdateOutputText("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
             return true;
         }
@@ -69,6 +71,7 @@ namespace WindowsFormsApp1
         {
             string test = ("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
             _consoleManager.SendInput(test);
+            
             flag = true;
         }
 
@@ -206,7 +209,10 @@ namespace WindowsFormsApp1
                     preAction = -1;
                     maybeCritical = -1;
                     slept = false;
+                    DisplayTurnIndex = 0;
                     UpdateOutputText("");
+                    _ConsoleWindow.ResetState();
+                    _consoleManager.SendInput("h");
                     await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
                     
 
@@ -487,7 +493,7 @@ namespace WindowsFormsApp1
                 Sleeping = false;
                 slept = true;
             }
-            else if (!slept && Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex == 0 && !ActionTaken)
+            else if (Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex == 0 && !ActionTaken)
             {
                 action = BattleAction.CURE_SLEEPING;
                 NeedDamage1 = -1;
@@ -595,6 +601,10 @@ namespace WindowsFormsApp1
                 if (NeedDamage1 == -1&&NeedDamage2 == -1)
                 {
                     UpdateDamage(TurnIndex, ActionIndex, 0);
+                }
+                if (ActionIndex == 0)
+                {
+                    DisplayTurnIndex++;
                 }
                 ActionIndex++;
                 if (ActionIndex == 3)
@@ -845,6 +855,7 @@ namespace WindowsFormsApp1
             if (_ConsoleWindow != null)
             {
                 _ConsoleWindow.AppendText(obj);
+                _ConsoleWindow.UpdateCurrentTurn(DisplayTurnIndex);
             }
         }
 
@@ -1794,6 +1805,8 @@ namespace WindowsFormsApp1
             {
                 if (TurnIndex >= 3)
                 {
+                    _ConsoleWindow.ResetState();
+                    _consoleManager.SendInput("h");
                     runSearch();
                 }
             }
