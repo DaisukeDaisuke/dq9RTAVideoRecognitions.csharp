@@ -2,19 +2,24 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace erugiosu2
 {
     internal class ConsoleWindow : Form
     {
-        private TextBox _consoleOutput;
-        private List<string> _allLines = new List<string>();
+        private RichTextBox _consoleOutput;
         private List<string> _allLinesBackup = new List<string>();
         private Dictionary<int, int> _turnIndexMap = new Dictionary<int, int>(); // ターン番号 → 行インデックス
         private bool show = true;
         private bool disposing1 = false;
+        private int _lastline = 0;
+        private int _lastline1 = 0;
+        private int _lastEdited = -1;
 
         public ConsoleWindow()
         {
@@ -34,11 +39,12 @@ namespace erugiosu2
             this.StartPosition = FormStartPosition.CenterScreen;
 
             // TextBox の作成
-            _consoleOutput = new TextBox
+            // RichTextBox の作成
+            _consoleOutput = new RichTextBox
             {
                 Multiline = true,
                 ReadOnly = true,
-                ScrollBars = ScrollBars.Vertical,
+                ScrollBars = RichTextBoxScrollBars.Vertical,
                 BackColor = Color.Black,
                 ForeColor = Color.FromArgb(230, 230, 230),
                 Dock = DockStyle.Fill,
@@ -68,28 +74,31 @@ namespace erugiosu2
 
                 if (text.StartsWith("turn"))
                 {
-                    _allLines.Add("  " + text);
-                    _allLinesBackup.Add("  " + text);
+                    _allLinesBackup.Add(Environment.NewLine + "  " + text);
+                    _consoleOutput.AppendText(Environment.NewLine + "  " + text);
+                    _consoleOutput.SelectionStart = 0; // 左端にリセット
+                    _consoleOutput.ScrollToCaret();
                     return;
                 }
-
-                _consoleOutput.SelectionStart = 0; // 左端にリセット
-                _consoleOutput.ScrollToCaret();
 
                 Match m = Regex.Match(text, @"^(\d+)(\s+)(.*)$");
                 if (m.Success)
                 {
-                    _allLines.Add("  " + text);
                     _allLinesBackup.Add("  " + text);
-                    int lineIndex = _allLines.Count - 1;
+                    int lineIndex = _allLinesBackup.Count - 1;
                     int turnNumber = int.Parse(m.Groups[1].Value);
                     _turnIndexMap[turnNumber] = lineIndex; // ターン番号に対するインデックスを保存
+                    _consoleOutput.AppendText(Environment.NewLine + "  " + text);
                 }
                 else
                 {
-                    _allLines.Add(text);
                     _allLinesBackup.Add(text);
+                    if (String.IsNullOrEmpty(_consoleOutput.Text))
+                        _consoleOutput.AppendText(text);
+                    else
+                        _consoleOutput.AppendText(Environment.NewLine + text);
                 }
+                _lastline1 = 0;
             }
         }
 
@@ -112,77 +121,78 @@ namespace erugiosu2
                 int index = _turnIndexMap.GetOrDefault(turn, -1);
                 if (index == -1)
                 {
-                    _allLines.Clear();   // 中身を空にする
-                    _allLines = null;    // 参照を解除（GCの対象にする）
-                    _allLines = new List<string>(_allLinesBackup);  // バックアップを新しいリストにコピー
-                    _consoleOutput.Text = string.Join(Environment.NewLine, _allLines);
-                    return;
-                }
 
-                _allLines.Clear();   // 中身を空にする
-                _allLines = null;    // 参照を解除（GCの対象にする）
-                _allLines = new List<string>(_allLinesBackup);  // バックアップを新しいリストにコピー
-                if (_allLines.Count <= index)
-                {
-                    _allLines = new List<string>(_allLinesBackup);  // バックアップを新しいリストにコピー
-                    _consoleOutput.Text = string.Join(Environment.NewLine, _allLines);
                     return;
                 }
-                string line = _allLines[index];
+                if (_allLinesBackup.Count <= index)
+                {
+                    return;
+                }
+                string line = _allLinesBackup[index];
                 Match m = Regex.Match(line, @"^\s+(\d+)(\s+)(.*)$");
                 if (m.Success)
                 {
-
-                    // 更新前の選択状態を保存
-                    int savedSelectionStart = _consoleOutput.SelectionStart;
-                    int savedSelectionLength = _consoleOutput.SelectionLength;
-
                     string newLine = $"> {turn}" + m.Groups[2].Value + m.Groups[3].Value;
-                    _allLines[index] = newLine;
-                    _consoleOutput.Text = string.Join(Environment.NewLine, _allLines);
-                    // 初回は0行目固定、10ターン目以降のみ自動スクロールする
-                    if (turn >= 7)
-                    {
-                        // 現在の表示領域の先頭行を取得
-                        int firstVisibleLine = _consoleOutput.GetLineFromCharIndex(
-                            _consoleOutput.GetCharIndexFromPosition(new Point(0, 0)));
 
-                        if (firstVisibleLine <= 0)// 一番下にスクロールしてるとなぜか0になる。なぜか勝手に一番上にスクロールするおまけつき
-                        {
-                            _consoleOutput.SelectionStart = _consoleOutput.Text.Length;
-                            _consoleOutput.ScrollToCaret();
-                            return;
-                        }
+                    int originalSelectionStart = _consoleOutput.SelectionStart;
+
+                    if(originalSelectionStart == 0)
+                    {
+                        originalSelectionStart = _lastline;
+                    }
+
+                    // テキスト全体を取得して行ごとに分割
+                    var lines = _consoleOutput.Lines.ToList();
+
+                    if(_lastEdited == index)
+                    {
+                        return;
+                    }
+
+                    if (_lastEdited != -1 && _lastEdited < lines.Count)
+                    {
+                        lines[_lastEdited] = _allLinesBackup[_lastEdited];
+                    }
+                    _lastEdited = index;
+                    if (index < lines.Count)
+                    {
+                        lines[index] = newLine;
+                    }
+
+                    // 更新されたテキストを再設定
+                    _consoleOutput.Lines = lines.ToArray();
+
+
+                    _consoleOutput.SelectionStart = originalSelectionStart;
+
+                    // 初回は0行目固定、10ターン目以降のみ自動スクロールする
+                    if (turn >= 6)
+                    {
+                       int firstVisibleLine = _lastline1;
+                        
 
                         // 表示可能な行数を算出
                         int visibleLines = _consoleOutput.ClientSize.Height / _consoleOutput.Font.Height;
                         int lastVisibleLine = firstVisibleLine + visibleLines - 1;
                         // 更新した行が下端近くなら1行分下へスクロール
-                        int updatedLine = _consoleOutput.GetLineFromCharIndex(
-                            _consoleOutput.GetFirstCharIndexFromLine(index));
+                        int updatedLine = index;
+                        //インデックス上の最後の値を取得
+                        int last = _turnIndexMap.Values.Last();
 
-                        if (updatedLine <= 7)
+                        if(firstVisibleLine + visibleLines >= last + 1)
                         {
-                            return;
-                        }
-
-                        // TextBox の全行数を取得
-                        int totalLines = _consoleOutput.Lines.Length;
-                        // 更新対象の行 index が全体の下から3行以内なら、末尾へスクロール
-                        if (updatedLine >= totalLines - 3)
-                        {
-                            _consoleOutput.SelectionStart = _consoleOutput.Text.Length;
                             _consoleOutput.ScrollToCaret();
                             return;
                         }
 
-                        if (updatedLine > (lastVisibleLine + 1))
+                        if (last > updatedLine)
                         {
-                            int nextLine = updatedLine + 3;
+                            int nextLine = firstVisibleLine + 1;
                             int nextLineCharIndex = _consoleOutput.GetFirstCharIndexFromLine(nextLine);
                             if (nextLineCharIndex > 0)
                             {
                                 _consoleOutput.SelectionStart = nextLineCharIndex;
+                                _lastline1 = nextLine;
                                 _consoleOutput.ScrollToCaret();
                             }
                         }
@@ -193,11 +203,6 @@ namespace erugiosu2
                             return;
                         }
                     }
-
-                    // 更新後、ユーザーが選択していた状態を復元
-                    // ※ただし、ユーザーが既にカーソルを移動させていた場合はそのままにするか、条件で制御する
-                    _consoleOutput.SelectionStart = savedSelectionStart;
-                    _consoleOutput.SelectionLength = savedSelectionLength;
                 }
             }
         }
@@ -213,12 +218,13 @@ namespace erugiosu2
             }
             else
             {
-                _allLines.Clear();
                 _allLinesBackup.Clear();
                 _turnIndexMap.Clear();
-                _allLines.Add("Console has been reset");
                 _allLinesBackup.Add("Console has been reset");
                 _consoleOutput.Text = "Console has been reset";
+                _lastline = 0;
+                _lastEdited = -1;
+                _lastline1 = 0;
             }
         }
 
@@ -261,7 +267,6 @@ namespace erugiosu2
                 }
 
                 // コレクションをクリア（nullにはしない）
-                _allLines.Clear();
                 _allLinesBackup.Clear();
                 _turnIndexMap.Clear();
             }

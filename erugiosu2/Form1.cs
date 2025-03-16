@@ -840,12 +840,11 @@ namespace WindowsFormsApp1
 
             DebugTextBox.Font = new Font(DebugTextBox.Font.FontFamily, 10); // サイズを24に設定
 
-            _consoleManager = new CppConsoleManager(CppProgramPath);
-            _consoleManager.OnOutputReceived += OnCppOutputReceived;
-
             _ConsoleWindow = new ConsoleWindow();
             _ConsoleWindow.Show();
 
+            _consoleManager = new CppConsoleManager(CppProgramPath);
+            _consoleManager.OnOutputReceived += OnCppOutputReceived;
         }
 
         private void OnCppOutputReceived(string obj)
