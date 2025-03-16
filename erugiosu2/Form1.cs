@@ -170,6 +170,10 @@ namespace WindowsFormsApp1
                 updateText1();
 
                 var action1 = battleLog[participantId][actionIndex].Action;
+                if(damage == 0)
+                {
+                    return;
+                }
                 if (action1 == BattleAction.ATTACK_ENEMY || action1 == BattleAction.CRITICAL_ATTACK || action1 == BattleAction.LIGHTNING_STORM || action1 == BattleAction.ULTRA_HIGH_SPEED_COMBO || action1 == BattleAction.SKY_ATTACK) {
                     if (Sleeping && (ActionTaken || actionIndex == 2))
                     {
@@ -484,7 +488,7 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
             }
 
-            if (!slept && Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex != 0 && !ActionTaken)
+            if (!slept && Sleeping && (lastHit1 == "WakeUp.png" || lastHit1 == "WakeUp2.png") && lastHit2 != "inori.png" && ActionIndex != 0 && !ActionTaken)
             {
                 action = BattleAction.TURN_SKIPPED;
                 NeedDamage1 = -1;
@@ -493,7 +497,7 @@ namespace WindowsFormsApp1
                 Sleeping = false;
                 slept = true;
             }
-            else if (Sleeping && lastHit1 == "WakeUp.png" && lastHit2 != "inori.png" && ActionIndex == 0 && !ActionTaken)
+            else if (Sleeping && (lastHit1 == "WakeUp.png" || lastHit1 == "WakeUp2.png") && lastHit2 != "inori.png" && ActionIndex == 0 && !ActionTaken)
             {
                 action = BattleAction.CURE_SLEEPING;
                 NeedDamage1 = -1;

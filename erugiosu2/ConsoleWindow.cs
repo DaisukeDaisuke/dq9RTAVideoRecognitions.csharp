@@ -43,7 +43,7 @@ namespace erugiosu2
                 ReadOnly = true,
                 ScrollBars = RichTextBoxScrollBars.Vertical,
                 BackColor = Color.FromArgb(12, 12, 12),
-                ForeColor = Color.FromArgb(204, 204, 204),
+                ForeColor = Color.FromArgb(210, 210, 210), //数か月後の私へ: コントラスト調整したほうがいい
                 Dock = DockStyle.Fill,
                 Font = new Font("Consolas", 11),
                 WordWrap = false,
