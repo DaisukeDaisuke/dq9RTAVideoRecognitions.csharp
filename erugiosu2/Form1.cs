@@ -792,7 +792,7 @@ namespace WindowsFormsApp1
             if (!File.Exists(CppProgramPath))
             {
                 DialogResult result = MessageBox.Show(
-                    $"{CppProgramPath}' が見つかりません。" + Environment.NewLine + "プログラムを異常終了します。" + Environment.NewLine + "どうしても起動したい心情がある場合、キャンセル(正常動作は保証しません)" + Environment.NewLine + "プログラムを終了するにはOKを押します",
+                    $"{CppProgramPath}' が見つかりません。" + Environment.NewLine + "プログラムを異常終了します。" + Environment.NewLine + "どうしても起動したい場合、キャンセル(正常動作は保証しません)" + Environment.NewLine + "プログラムを終了するにはOKを押します",
                     "確認",
                     MessageBoxButtons.OKCancel,
                     MessageBoxIcon.Warning
