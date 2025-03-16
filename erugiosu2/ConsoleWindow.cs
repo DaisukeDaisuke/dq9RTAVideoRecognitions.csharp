@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
 using System.Globalization;
 using System.Linq;
@@ -17,7 +18,6 @@ namespace erugiosu2
         private Dictionary<int, int> _turnIndexMap = new Dictionary<int, int>(); // ターン番号 → 行インデックス
         private bool show = true;
         private bool disposing1 = false;
-        private int _lastline = 0;
         private int _lastline1 = 0;
         private int _lastEdited = -1;
 
@@ -136,11 +136,6 @@ namespace erugiosu2
 
                     int originalSelectionStart = _consoleOutput.SelectionStart;
 
-                    if(originalSelectionStart == 0)
-                    {
-                        originalSelectionStart = _lastline;
-                    }
-
                     // テキスト全体を取得して行ごとに分割
                     var lines = _consoleOutput.Lines.ToList();
 
@@ -166,7 +161,7 @@ namespace erugiosu2
                     _consoleOutput.SelectionStart = originalSelectionStart;
 
                     // 初回は0行目固定、10ターン目以降のみ自動スクロールする
-                    if (turn >= 6)
+                    if (turn >= 5)
                     {
                        int firstVisibleLine = _lastline1;
                         
@@ -178,6 +173,7 @@ namespace erugiosu2
                         int updatedLine = index;
                         //インデックス上の最後の値を取得
                         int last = _turnIndexMap.Values.Last();
+                        int first = _turnIndexMap.Values.First();
 
                         if(firstVisibleLine + visibleLines >= last + 1)
                         {
@@ -222,7 +218,6 @@ namespace erugiosu2
                 _turnIndexMap.Clear();
                 _allLinesBackup.Add("Console has been reset");
                 _consoleOutput.Text = "Console has been reset";
-                _lastline = 0;
                 _lastEdited = -1;
                 _lastline1 = 0;
             }
