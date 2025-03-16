@@ -113,6 +113,7 @@ namespace erugiosu2
         public const int SPECIAL_MEDICINE = 50;
         public const int DEAD = 51;
         public const int SONG = 52;
+        public const int FLEE = 53;
 
 
         // 味方アクションかどうかを判定するダミー関数（実装は任意）
@@ -169,7 +170,8 @@ namespace erugiosu2
         { ELFIN_ELIXIR, "エルフののみぐすり" },
         { MAGIC_WATER, "まほうのせいすい" },
         { DEAD, "しんでしまった！" },
-        { SONG, "ゴスペルソング" }
+        { SONG, "ゴスペルソング" },
+        { FLEE, "逃げる" },
     };
 
         private static readonly Dictionary<int, string> actionNames = new()
@@ -211,7 +213,8 @@ namespace erugiosu2
         { ELFIN_ELIXIR, "エルフののみぐすり" },
         { MAGIC_WATER, "まほうのせいすい" },
         { DEAD, "しんでしまった！" },
-        { SONG, "ゴスペルソング" }
+        { SONG, "ゴスペルソング" },
+        { FLEE, "逃げる" },
     };
 
         public static string GetActionName(int actionId) =>

@@ -577,6 +577,14 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
+            if(lastHit1 == "flee.png")
+            {
+                action = BattleAction.FLEE;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+                ActionTaken = true;
+            }
+
             if(!ActionTaken && lastHit3 == "a_attack.png" && lastHit2 != "uhsc.png" && lastHit1 != "guard.png")
             {
                 action = BattleAction.ATTACK_ALLY;
@@ -783,11 +791,11 @@ namespace WindowsFormsApp1
 
             using (var sde = new SystemDeviceEnumerator())
             {
-                var devices = sde.ListVideoInputDevice(); // 例: Dictionary<int, string>
-
-                // "OBS Virtual Camera" に一致するインデックスを取得
                 try
                 {
+                    var devices = sde.ListVideoInputDevice(); // 例: Dictionary<int, string>
+                    // "OBS Virtual Camera" に一致するインデックスを取得
+
                     int obsCameraIndex = devices
                         .FirstOrDefault(d => d.Value == "OBS Virtual Camera").Key;
                     if (obsCameraIndex == default(int) && !devices.ContainsKey(obsCameraIndex))
@@ -995,6 +1003,7 @@ namespace WindowsFormsApp1
         {
             lastHit1 = "";
             lastHit2 = "";
+            lastHit3 = "";
 
             highestMatchImageNames[0] = "";
             highestMatchImageNames[1] = "";
@@ -1030,19 +1039,18 @@ namespace WindowsFormsApp1
                 }
 
                 StringBuilder sb = new StringBuilder();
-                sb.Append("int1: ").Append(string.Join(", ", matchResults1)).Append(" \r\n");
-                sb.Append("int2: ").Append(string.Join(", ", matchResults2)).Append(" \r\n");
+                sb.Append("int1: ").Append(string.Join(", ", matchResults1)).Append(" " + Environment.NewLine);
+                sb.Append("int2: ").Append(string.Join(", ", matchResults2)).Append(" " + Environment.NewLine);
 
                 // tem1, tem2, tem3の部分を追加
                 for (int j = 0; j < 3; j++)
                 {
                     string templateName = string.IsNullOrEmpty(highestMatchImageNames[j]) ? "null" : highestMatchImageNames[j];
                     double matchPercentage = highestMatchPercentage[j];
-                    sb.Append($"tem{j + 1}: {templateName}: {matchPercentage:F1}% \r\n");  // 一致率を1桁にフォーマット
+                    sb.Append($"tem{j + 1}: {templateName}: {matchPercentage:F1}% " + Environment.NewLine);  // 一致率を1桁にフォーマット
                 }
 
                 DebugTextBox.Text = sb.ToString();
-
 
                 ProcessState();
 
@@ -1165,12 +1173,12 @@ namespace WindowsFormsApp1
                                 {
                                     highestMatchPercentage[2] = matchPercentage;
                                     highestMatchImageNames[2] = Path.GetFileName(templateFile); // 画像名を保存
-                                }
 
-                                if (matchPercentage >= 80)
-                                {
-                                    Console.WriteLine($"2Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
-                                    lastHit2 = Path.GetFileName(templateFile);
+                                    if (matchPercentage >= 80)
+                                    {
+                                        Console.WriteLine($"2Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
+                                        lastHit2 = Path.GetFileName(templateFile);
+                                    }
                                 }
                             }
                         }
@@ -1238,12 +1246,12 @@ namespace WindowsFormsApp1
                                 {
                                     highestMatchPercentage[0] = matchPercentage;
                                     highestMatchImageNames[0] = Path.GetFileName(templateFile); // 画像名を保存
-                                }
 
-                                if (matchPercentage >= 80)
-                                {
-                                    lastHit1 = Path.GetFileName(templateFile);
-                                    Console.WriteLine($"Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
+                                    if (matchPercentage >= 80)
+                                    {
+                                        lastHit1 = Path.GetFileName(templateFile);
+                                        Console.WriteLine($"Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
+                                    }
                                 }
                                 //SaveMatAsImage(trimmed, 1);
                             }
@@ -1348,7 +1356,7 @@ namespace WindowsFormsApp1
             using (Bitmap bmp = trimmed.ToBitmap())
             {
                 // 画像をPNG形式で保存
-                bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
+                //bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
             }
 #endif
         }
@@ -1482,12 +1490,12 @@ namespace WindowsFormsApp1
                                 {
                                     highestMatchPercentage[1] = matchPercentage;
                                     highestMatchImageNames[1] = Path.GetFileName(templateFile); // 画像名を保存
-                                }
+                                    if (matchPercentage >= 80)
+                                    {
+                                        Console.WriteLine($"2Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
+                                        lastHit3 = Path.GetFileName(templateFile);
+                                    }
 
-                                if (matchPercentage >= 80)
-                                {
-                                    Console.WriteLine($"2Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
-                                    lastHit3 = Path.GetFileName(templateFile);
                                 }
                             }
                         }
