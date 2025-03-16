@@ -789,6 +789,24 @@ namespace WindowsFormsApp1
             // Resizeイベントでフォームサイズ変更時にDataGridViewの幅を追従
             this.Resize += new EventHandler(Form1_Resize);
 
+            if (!File.Exists(CppProgramPath))
+            {
+                DialogResult result = MessageBox.Show(
+                    $"{CppProgramPath}' が見つかりません。" + Environment.NewLine + "プログラムを異常終了します。" + Environment.NewLine + "どうしても起動したい心情がある場合、キャンセル(正常動作は保証しません)" + Environment.NewLine + "プログラムを終了するにはOKを押します",
+                    "確認",
+                    MessageBoxButtons.OKCancel,
+                    MessageBoxIcon.Warning
+                );
+
+                if (result == DialogResult.OK)
+                {
+                    // OKを押したらプログラムを終了
+                    this.Dispose();
+                    Environment.Exit(1);
+                    return;
+                }
+            }
+
             using (var sde = new SystemDeviceEnumerator())
             {
                 try
@@ -1001,6 +1019,7 @@ namespace WindowsFormsApp1
 
         private async void CaptureFrame(object sender, EventArgs e)
         {
+            Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(6, 1));
             lastHit1 = "";
             lastHit2 = "";
             lastHit3 = "";

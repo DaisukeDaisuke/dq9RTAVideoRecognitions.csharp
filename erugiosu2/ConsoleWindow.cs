@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -109,6 +110,7 @@ namespace erugiosu2
             }
             else
             {
+                Debug.Assert(OperatingSystem.IsWindowsVersionAtLeast(6, 1));
                 // ウィンドウが最小化状態なら、選択やスクロール更新を行わない
                 if (this.WindowState == FormWindowState.Minimized)
                     return;

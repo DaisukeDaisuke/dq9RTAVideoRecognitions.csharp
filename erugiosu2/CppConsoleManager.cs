@@ -19,7 +19,7 @@ namespace erugiosu2
         {
             if (!File.Exists(exePath))
             {
-                MessageBox.Show($"'{exePath}' が見つかりません。操作を中止します。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"'{exePath}' が見つかりません。" + Environment.NewLine + "このインスタンスではコンソールウインドウは機能しません。", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
@@ -91,8 +91,8 @@ namespace erugiosu2
 
             try
             {
-                _process.Kill();
-                _process.WaitForExit(5000);
+                _process?.Kill();
+                _process?.WaitForExit(5000);
             }
             catch
             {
