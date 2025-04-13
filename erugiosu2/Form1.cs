@@ -14,6 +14,7 @@ using erugiosu2;
 using System.Drawing.Imaging;
 using System.Threading.Tasks;
 using System.Text;
+using System.Threading;
 
 namespace WindowsFormsApp1
 {
@@ -21,7 +22,7 @@ namespace WindowsFormsApp1
     public partial class Form1 : Form
     {
         private VideoCapture _capture;
-        private Timer _timer;
+        private System.Windows.Forms.Timer _timer;
         private int frameCounter = 0; // フレームカウンタ
         private Dictionary<string, Mat> templateCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         private Dictionary<string, Mat> NumberCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
@@ -859,7 +860,7 @@ namespace WindowsFormsApp1
             }
 
             // タイマー設定（5fps）
-            _timer = new Timer();
+            _timer = new System.Windows.Forms.Timer();
             _timer.Interval = 300;
             _timer.Tick += new EventHandler(CaptureFrame);
             _timer.Start();
@@ -887,19 +888,21 @@ namespace WindowsFormsApp1
                 _ConsoleWindow.UpdateCurrentTurn(DisplayTurnIndex);
             }
         }
-
+        
         private void LoadTemplatesToCache()
         {
             // resourceフォルダ内のテンプレート画像をキャッシュに読み込む
             string resourceDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resource", "message_v2");
             string[] templateFiles = Directory.GetFiles(resourceDir, "*.png");
 
+            int counter = 1;
             foreach (string templateFile in templateFiles)
             {
                 if (!templateCache.ContainsKey(templateFile))
                 {
                     Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
                     templateCache.Add(templateFile, template);
+                    
                 }
             }
 
@@ -1197,7 +1200,7 @@ namespace WindowsFormsApp1
                                     highestMatchPercentage[2] = matchPercentage;
                                     highestMatchImageNames[2] = Path.GetFileName(templateFile); // 画像名を保存
 
-                                    if (matchPercentage >= 80)
+                                    if (matchPercentage >= 67)
                                     {
                                         Console.WriteLine($"2Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
                                         lastHit2 = Path.GetFileName(templateFile);
@@ -1208,7 +1211,7 @@ namespace WindowsFormsApp1
 
                         if (frameCounter % 2 == 0)
                         {
-                            SaveMatAsImage(trimmed, 2);
+                            //SaveMatAsImage(trimmed, 2);
                             //pictureBox4.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
                         }
                     }
@@ -1270,7 +1273,7 @@ namespace WindowsFormsApp1
                                     highestMatchPercentage[0] = matchPercentage;
                                     highestMatchImageNames[0] = Path.GetFileName(templateFile); // 画像名を保存
 
-                                    if (matchPercentage >= 80)
+                                    if (matchPercentage >= 67)
                                     {
                                         lastHit1 = Path.GetFileName(templateFile);
                                         Console.WriteLine($"Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
@@ -1283,7 +1286,7 @@ namespace WindowsFormsApp1
                         {
 
                             //pictureBox2.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
-                            SaveMatAsImage(trimmed, 1);
+                            SaveMatAsImage(trimmed, 2000);
                         }
 
                     }
@@ -1336,7 +1339,7 @@ namespace WindowsFormsApp1
                                     double matchPercentage = maxVal * 100.0;
 
 
-                                    if (matchPercentage >= 93.5 && highestNumberMatchPercentage2[i] <= matchPercentage)
+                                    if (matchPercentage >= 90 && highestNumberMatchPercentage2[i] <= matchPercentage)
                                     {
                                         string templateFileName = Path.GetFileNameWithoutExtension(templateFile);
                                         string normalizedTemplate = templateFileName.Split('_')[0]; // "_"以降を除去してベース番号を取得
@@ -1379,11 +1382,91 @@ namespace WindowsFormsApp1
             using (Bitmap bmp = trimmed.ToBitmap())
             {
                 // 画像をPNG形式で保存
-                //bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
+                bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
             }
 #endif
         }
 
+
+        //呼びだす際はusing使う事。使わないとメモリリークする
+        private Mat TrimFirstPixel1(Mat resultMat1, int xSize, int ySize)
+        {
+            // 最初の白ピクセルを探索
+            Rectangle firstWhitePixel = new Rectangle(0, 0, 0, 0); // 初期値として無効な位置を設定
+            bool found = false, found1 = false;
+            int cropWidth = 0, cropHeight = 0;
+            int foundX = 0, foundY = 0;
+            using (Image<Bgr, byte> tmp = resultMat1.ToImage<Bgr, byte>())
+            {
+
+                for (int y = 0; y < resultMat1.Height; y++)
+                {
+                    for (int x = 0; x < resultMat1.Width; x++)
+                    {
+                        var color = tmp[y, x];
+                        // 白色のピクセルを判定
+                        if (color.Blue >= 200 && color.Green >= 200 && color.Red >= 200)
+                        {
+                            //cropWidth = Math.Min(xSize, resultMat1.Width - x);
+                            found1 = true;
+                            foundX = x;
+                            foundY = y;
+                            break;
+                        }
+                    }
+                    if (found1)
+                    {
+                        break; // 外側のループも抜ける
+                    }
+                }
+
+                if (found1)
+                {
+                    for (int x = 0; x < resultMat1.Width; x++)
+                    {
+                        for (int y = 0; y < resultMat1.Height; y++)
+                        {
+
+                            // ピクセルの色を取得
+                            var color = tmp[y, x];
+
+                            // 白色のピクセルを判定
+                            if (color.Blue >= 200 && color.Green >= 200 && color.Red >= 200)
+                            {
+
+                                foundX = Math.Min(foundX, x);
+                                foundY = Math.Min(foundY, y);
+
+                                cropHeight = Math.Min(ySize, resultMat1.Height - foundY); // y座標から画像の下端までの距離を超えない
+                                cropWidth = Math.Min(xSize, resultMat1.Width - foundX); // y座標から画像の下端までの距離を超えない
+
+                                // 白ピクセルの位置を基準に、切り取り領域を設定
+                                found = true;
+                                break; // 白ピクセルを見つけたらループを抜ける
+                            }
+                        }
+                        if (found)
+                        {
+                            break; // 外側のループも抜ける
+                        }
+                    }
+                }
+
+                if (found)
+                {
+                    using (resultMat1)
+                    {
+                        firstWhitePixel = new Rectangle(foundX, foundY, cropWidth, cropHeight);
+                        Mat test = new Mat(resultMat1, firstWhitePixel);
+                        return test;
+                    }
+                }
+                else
+                {
+                    return resultMat1;
+                }
+            }
+        }
 
         //呼びだす際はusing使う事。使わないとメモリリークする
         private Mat TrimFirstPixel(Mat resultMat1, int xSize, int ySize) {
@@ -1513,7 +1596,7 @@ namespace WindowsFormsApp1
                                 {
                                     highestMatchPercentage[1] = matchPercentage;
                                     highestMatchImageNames[1] = Path.GetFileName(templateFile); // 画像名を保存
-                                    if (matchPercentage >= 80)
+                                    if (matchPercentage >= 67)
                                     {
                                         Console.WriteLine($"2Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
                                         lastHit3 = Path.GetFileName(templateFile);
@@ -1572,7 +1655,7 @@ namespace WindowsFormsApp1
                                     double matchPercentage = maxVal * 100.0;
 
 
-                                    if (matchPercentage >= 93.5 && highestNumberMatchPercentage2[i] <= matchPercentage)
+                                    if (matchPercentage >= 90.0 && highestNumberMatchPercentage2[i] <= matchPercentage)
                                     {
                                         Console.WriteLine($"Number10 {i} with {Path.GetFileName(templateFile)}: {matchPercentage}%");
                                         string templateFileName = Path.GetFileNameWithoutExtension(templateFile);
