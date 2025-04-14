@@ -19,20 +19,6 @@ namespace erugiosu2
         static void Main()
         {
 
-            // dllフォルダから不足DLLをロード
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
-            {
-                string dllName = new AssemblyName(args.Name).Name + ".dll";
-                string dllPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dll", dllName);
-
-                if (File.Exists(dllPath))
-                {
-                    return Assembly.LoadFrom(dllPath);
-                }
-
-                return null;
-            };
-
             // OSバージョンチェック
             if (!OperatingSystem.IsWindowsVersionAtLeast(6, 1)) // Windows 7 (6.1)以降かをチェック
             {
