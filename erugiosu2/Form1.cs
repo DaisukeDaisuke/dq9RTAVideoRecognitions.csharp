@@ -435,6 +435,13 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
                 ActionTaken = true;
             }
+            if (lastHit1 == "seisui.png")
+            {
+                action = BattleAction.MAGIC_WATER;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+                ActionTaken = true;
+            }
             if (lastHit1 == "meisou.png")
             {
                 action = BattleAction.MEDITATION;
