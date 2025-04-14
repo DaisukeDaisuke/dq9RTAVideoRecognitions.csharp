@@ -187,7 +187,7 @@ namespace WindowsFormsApp1
         private bool Sleeping = false;
         private async void ProcessState()
         {
-            if (lastHit1 == "erugio.png" && lastHit2 == "reset.png")
+            if ((lastHit1 == "erugio.png" || lastHit1 == "erugio2.png" || lastHit1 == "erugio4.png") && lastHit2 == "reset.png")
             {
                 if (!Initialized)
                 {
@@ -377,7 +377,7 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if (lastHit1 == "erugio.png" && lastHit2 == "attack.png")
+            if ((lastHit1 == "erugio.png" || lastHit1 == "erugio2.png" || lastHit1 == "erugio4.png") && lastHit2 == "attack.png")
             {
                 maybeCritical = (ActionIndex << 12) | TurnIndex;
                 action = BattleAction.ATTACK_ENEMY;
@@ -421,7 +421,7 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
             }
 
-            if (lastHit1 == "erugio.png" && lastHit2 == "uhsc.png")
+            if ((lastHit1 == "erugio.png" || lastHit1 == "erugio2.png" || lastHit1 == "erugio4.png") && lastHit2 == "uhsc.png")
             {
                 action = BattleAction.ULTRA_HIGH_SPEED_COMBO;
                 NeedDamage2 = (ActionIndex << 12) | TurnIndex;
