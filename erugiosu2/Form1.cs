@@ -13,6 +13,7 @@ using System.Diagnostics;
 using erugiosu2;
 using System.Threading.Tasks;
 using System.Text;
+using System.Drawing.Imaging;
 namespace WindowsFormsApp1
 {
 
@@ -491,7 +492,7 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
             }
 
-            if (!slept && Sleeping && (lastHit1 == "WakeUp.png" || lastHit1 == "WakeUp2.png") && lastHit2 != "inori.png" && ActionIndex != 0 && !ActionTaken)
+            if (!slept && Sleeping && (lastHit1 == "WakeUp.png" || lastHit1 == "WakeUp2.png" || lastHit1 == "WakeUp3.png") && lastHit2 != "inori.png" && ActionIndex != 0 && !ActionTaken)
             {
                 action = BattleAction.TURN_SKIPPED;
                 NeedDamage1 = -1;
@@ -500,7 +501,7 @@ namespace WindowsFormsApp1
                 Sleeping = false;
                 slept = true;
             }
-            else if (Sleeping && (lastHit1 == "WakeUp.png" || lastHit1 == "WakeUp2.png") && lastHit2 != "inori.png" && ActionIndex == 0 && !ActionTaken)
+            else if (Sleeping && (lastHit1 == "WakeUp.png" || lastHit1 == "WakeUp2.png" || lastHit1 == "WakeUp3.png") && lastHit2 != "inori.png" && ActionIndex == 0 && !ActionTaken)
             {
                 action = BattleAction.CURE_SLEEPING;
                 NeedDamage1 = -1;
@@ -1392,15 +1393,15 @@ namespace WindowsFormsApp1
             using (Bitmap bmp = trimmed.ToBitmap())
             {
                 // 画像をPNG形式で保存
-                //bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
+                bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
             }
 #endif
         }
 
-        //呼びだす際はusing使う事。使わないとメモリリークする
+        // 呼びだす際はusing使う事。使わないとメモリリークする
         private Mat TrimFirstPixel(Mat resultMat1, int xSize, int ySize)
         {
-            // 最初の白ピクセルを探索
+            // 最初の条件を満たす白ピクセルの位置を保持するための変数
             Rectangle firstWhitePixel = new Rectangle(0, 0, 0, 0); // 初期値として無効な位置を設定
             bool found = false, found1 = false;
             int cropWidth = 0, cropHeight = 0;
@@ -1409,65 +1410,78 @@ namespace WindowsFormsApp1
             CvInvoke.CvtColor(resultMat1, monoImage, Emgu.CV.CvEnum.ColorConversion.Bgr2Gray);
             using (Image<Bgr, byte> tmp = resultMat1.ToImage<Bgr, byte>())
             {
-
+                // まず最初の白ピクセル（横に最低2ピクセル連続があるもの）を探索
                 for (int y = 0; y < resultMat1.Height; y++)
                 {
                     for (int x = 0; x < resultMat1.Width; x++)
                     {
                         var color = tmp[y, x];
-                        // 白色のピクセルを判定
+                        // 白色のピクセルと判定(閾値>=200)
                         if (color.Blue >= 200 && color.Green >= 200 && color.Red >= 200)
                         {
-                            //cropWidth = Math.Min(xSize, resultMat1.Width - x);
-                            found1 = true;
-                            foundX = x;
-                            foundY = y;
-                            break;
+                            // 横方向に1つ先のピクセルが存在し、かつ白色であるかチェック
+                            if (x + 1 < resultMat1.Width)
+                            {
+                                var nextColor = tmp[y, x + 1];
+                                if (nextColor.Blue >= 200 && nextColor.Green >= 200 && nextColor.Red >= 200)
+                                {
+                                    found1 = true;
+                                    foundX = x;
+                                    foundY = y;
+                                    break;
+                                }
+                            }
+                            // ※連続していなければ何もしないで次のピクセルへ
                         }
                     }
                     if (found1)
                     {
-                        break; // 外側のループも抜ける
+                        break; // 白ピクセルが見つかったのでループを抜ける
                     }
                 }
 
+                // 最初に検出した白領域の後、画像全体を再スキャンして実際の切り出し起点（左上端）を厳密に特定
                 if (found1)
                 {
                     for (int x = 0; x < resultMat1.Width; x++)
                     {
                         for (int y = 0; y < resultMat1.Height; y++)
                         {
-
-                            // ピクセルの色を取得
                             var color = tmp[y, x];
-
-                            // 白色のピクセルを判定
                             if (color.Blue >= 200 && color.Green >= 200 && color.Red >= 200)
                             {
+                                // 横方向の連続チェック
+                                if (x + 1 < resultMat1.Width)
+                                {
+                                    var nextColor = tmp[y, x + 1];
+                                    if (nextColor.Blue >= 200 && nextColor.Green >= 200 && nextColor.Red >= 200)
+                                    {
+                                        foundX = Math.Min(foundX, x);
+                                        foundY = Math.Min(foundY, y);
 
-                                foundX = Math.Min(foundX, x);
-                                foundY = Math.Min(foundY, y);
+                                        // 画像サイズを超えないように切り取り領域のサイズを算出
+                                        cropWidth = Math.Min(xSize, resultMat1.Width - foundX);
+                                        cropHeight = Math.Min(ySize, resultMat1.Height - foundY);
 
-                                cropHeight = Math.Min(ySize, resultMat1.Height - foundY); // y座標から画像の下端までの距離を超えない
-                                cropWidth = Math.Min(xSize, resultMat1.Width - foundX); // y座標から画像の下端までの距離を超えない
-
-                                // 白ピクセルの位置を基準に、切り取り領域を設定
-                                found = true;
-                                break; // 白ピクセルを見つけたらループを抜ける
+                                        found = true;
+                                        break;
+                                    }
+                                }
                             }
                         }
                         if (found)
                         {
-                            break; // 外側のループも抜ける
+                            break;
                         }
                     }
                 }
 
                 if (found)
                 {
-                    using (monoImage)
-                    {
+                    //メモリリークは絶対に避けないといけない
+                    using (monoImage) {
                         firstWhitePixel = new Rectangle(foundX, foundY, cropWidth, cropHeight);
+                        // monoImageはusingでの破棄対象にしたくない場合は、new Mat()で切り取り作成
                         return new Mat(monoImage, firstWhitePixel);
                     }
                 }
@@ -1477,6 +1491,7 @@ namespace WindowsFormsApp1
                 }
             }
         }
+
 
         private void ProcessCroppedImage1(Mat cropped)
         {
