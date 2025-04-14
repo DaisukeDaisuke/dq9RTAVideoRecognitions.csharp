@@ -38,13 +38,25 @@ jobs:
       - name: Build C#
         working-directory: dq9RTAVideoRecognitions
         run: dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true
+      - name: Arrange publish output
+        run: |
+          $publishDir = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/bin/${{env.BUILD_TYPE}}/net6.0-windows/win-x64/publish"
+          $dllDir = Join-Path $publishDir "dll"
+          New-Item -ItemType Directory -Force -Path $dllDir | Out-Null
+
+          # DLL を dll フォルダに移動（exeと同名のdllは除外）
+          Get-ChildItem "$publishDir\*.dll" | Where-Object {
+            $_.Name -ne "erugiosu2.dll"
+          } | ForEach-Object {
+            Move-Item $_.FullName $dllDir -Force
+          }
       - name: Install 7-Zip
         run: |
           choco install 7zip -y
       - name: Compress files with 7-Zip
         working-directory: dq9RTAVideoRecognitions
         run: |
-          $publishDir = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/bin/Release/net6.0-windows/win-x64/publish"
+          $publishDir = "${{github.workspace}}/dq9RTAVideoRecognitions/erugiosu2/bin/${{env.BUILD_TYPE}}/net6.0-windows/win-x64/publish"
           $outputZip = "${{github.workspace}}/erugiosu2.7z"
           & "C:\Program Files\7-Zip\7z.exe" a -t7z $outputZip $publishDir/*
       - name: Upload artifact
