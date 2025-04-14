@@ -11,11 +11,8 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using System.Diagnostics;
 using erugiosu2;
-using System.Drawing.Imaging;
 using System.Threading.Tasks;
 using System.Text;
-using System.Threading;
-
 namespace WindowsFormsApp1
 {
 
@@ -29,12 +26,12 @@ namespace WindowsFormsApp1
         private Dictionary<string, Mat> templateCache1 = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         private Dictionary<string, Mat> templateCache2 = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         int[] matchResults1 = new int[3] { -1, -1, -1 };
-        int[] matchResults2= new int[3] { -1, -1, -1 };
+        int[] matchResults2 = new int[3] { -1, -1, -1 };
 
         Dictionary<int, List<BattleAction>> battleLog = new Dictionary<int, List<BattleAction>>();
 
-        private string lastHit1 = ""; 
-        private string lastHit2 = ""; 
+        private string lastHit1 = "";
+        private string lastHit2 = "";
         private string lastHit3 = "";
 
         private int preAction = -1;
@@ -49,7 +46,7 @@ namespace WindowsFormsApp1
         private int TurnIndex = 0;
         private int DisplayTurnIndex = 1;
         private int maybeCritical = -1;
-        private bool slept = false; 
+        private bool slept = false;
         private DateTime LastDetection = DateTime.Now;
         // グローバルスコープで一致率の最も高い画像名と一致率を格納する変数を定義
         double[] highestMatchPercentage = new double[3] { 0, 0, 0 };
@@ -59,7 +56,7 @@ namespace WindowsFormsApp1
         private int marginX = 25;
         private int marginY = 205;
         private bool flag = false;
-        
+
 
         public bool updateText1()
         {
@@ -72,7 +69,7 @@ namespace WindowsFormsApp1
         {
             string test = ("b " + FormatParseInput() + " " + TurnIndex + " " + BattleAction.updateText1(battleLog));
             _consoleManager.SendInput(test);
-            
+
             flag = true;
         }
 
@@ -90,7 +87,7 @@ namespace WindowsFormsApp1
             {
                 return -1;
             }
-            if (matchResults[1] == -1&& matchResults[2] != -1)
+            if (matchResults[1] == -1 && matchResults[2] != -1)
             {
                 return -1;
             }
@@ -116,7 +113,7 @@ namespace WindowsFormsApp1
                 battleLog[participantId] = new List<BattleAction>();
             }
 
-            if(dataGridView1.RowCount < participantId+1)
+            if (dataGridView1.RowCount < participantId + 1)
             {
                 dataGridView1.Rows.Add();
                 // 一番下の行にスクロール
@@ -160,7 +157,7 @@ namespace WindowsFormsApp1
             {
                 var action = battleLog[participantId][actionIndex];
                 action.Damage = damage;
-               
+
                 dataGridView1.Rows[participantId].Cells[actionIndex * 2 + 2].Value = damage;
 
                 if (participantId >= 4 && actionIndex == 2 && !flag)
@@ -171,11 +168,12 @@ namespace WindowsFormsApp1
                 updateText1();
 
                 var action1 = battleLog[participantId][actionIndex].Action;
-                if(damage == 0)
+                if (damage == 0)
                 {
                     return;
                 }
-                if (action1 == BattleAction.ATTACK_ENEMY || action1 == BattleAction.CRITICAL_ATTACK || action1 == BattleAction.LIGHTNING_STORM || action1 == BattleAction.ULTRA_HIGH_SPEED_COMBO || action1 == BattleAction.SKY_ATTACK) {
+                if (action1 == BattleAction.ATTACK_ENEMY || action1 == BattleAction.CRITICAL_ATTACK || action1 == BattleAction.LIGHTNING_STORM || action1 == BattleAction.ULTRA_HIGH_SPEED_COMBO || action1 == BattleAction.SKY_ATTACK)
+                {
                     if (Sleeping && (ActionTaken || actionIndex == 2))
                     {
                         Sleeping = false;
@@ -188,7 +186,7 @@ namespace WindowsFormsApp1
         private bool Sleeping = false;
         private async void ProcessState()
         {
-            if (lastHit1 == "erugio.png"&&lastHit2 == "reset.png")
+            if (lastHit1 == "erugio.png" && lastHit2 == "reset.png")
             {
                 if (!Initialized)
                 {
@@ -218,9 +216,11 @@ namespace WindowsFormsApp1
                     UpdateOutputText("");
                     _ConsoleWindow.ResetState();
                     _consoleManager.SendInput("h");
-                    await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
-                    
 
+                    if (AutoLiveSplitEnabled.Checked)
+                    {
+                        await LiveSplitPipeClient.GetCurrentTimeAsync(onTimeReadComplete);
+                    }
                 }
                 return;
             }
@@ -232,7 +232,7 @@ namespace WindowsFormsApp1
             {
                 int turnind = maybeCritical & 0xfff;
                 int actionid = (maybeCritical >> 12) & 0xf;
-                if(lastHit1 == "critical.png")
+                if (lastHit1 == "critical.png")
                 {
                     UpdateAction(turnind, actionid, BattleAction.CRITICAL_ATTACK);
                     maybeCritical = -1;
@@ -241,7 +241,7 @@ namespace WindowsFormsApp1
 
             int damageTest1 = ConvertMatchResults(matchResults1);
             int damageTest2 = ConvertMatchResults(matchResults2);
-           if (NeedDamage1 != -1&& NeedDamage1Enabled || lastdamage1 < damageTest1)
+            if (NeedDamage1 != -1 && NeedDamage1Enabled || lastdamage1 < damageTest1)
             {
                 if (lastHit1 == "guard.png" || lastHit1 == "miss.png" || lastHit1 == "miss2.png" || lastHit1 == "mikawasi.png")
                 {
@@ -253,7 +253,7 @@ namespace WindowsFormsApp1
                     UpdateDamage(turnind, actionid, 0);
                     preAction = -1;
                 }
-                
+
                 if (damageTest1 != -1)
                 {
                     lastdamage1 = damageTest1;
@@ -266,8 +266,8 @@ namespace WindowsFormsApp1
                 }
                 else
                 {
-                    
-                    if (damageTest2 != -1&& damageTest1 < damageTest2)
+
+                    if (damageTest2 != -1 && damageTest1 < damageTest2)
                     {
                         lastdamage1 = damageTest2;
                         int turnind = NeedDamage1 & 0xfff;
@@ -280,17 +280,18 @@ namespace WindowsFormsApp1
                 }
                 return;
             }
-/*            else if (!NeedDamage1Enabled && NeedDamage1 != -1)
+            /*            else if (!NeedDamage1Enabled && NeedDamage1 != -1)
+                        {
+                            if (lastdamage1 > 0 && lastdamage1 < damageTest1 && damageTest1 != -1)
+                            {
+                                int turnind = NeedDamage1 & 0xfff;
+                                int actionid = (NeedDamage1 >> 12) & 0xf;
+                                UpdateDamage(turnind, actionid, damageTest2);
+                            }
+                        }*/
+            else if ((NeedDamage2 != -1 && NeedDamage2Enabled) || lastdamage2 < damageTest2)
             {
-                if (lastdamage1 > 0 && lastdamage1 < damageTest1 && damageTest1 != -1)
-                {
-                    int turnind = NeedDamage1 & 0xfff;
-                    int actionid = (NeedDamage1 >> 12) & 0xf;
-                    UpdateDamage(turnind, actionid, damageTest2);
-                }
-            }*/else if ((NeedDamage2 != -1&& NeedDamage2Enabled) || lastdamage2 < damageTest2)
-            {
-                if (lastHit1 == "guard.png"||lastHit1 == "miss.png"||lastHit1 == "miss2.png" || lastHit1 == "mikawasi.png")
+                if (lastHit1 == "guard.png" || lastHit1 == "miss.png" || lastHit1 == "miss2.png" || lastHit1 == "mikawasi.png")
                 {
                     int turnind = NeedDamage2 & 0xfff;
                     int actionind = (NeedDamage2 >> 12) & 0xf;
@@ -326,15 +327,15 @@ namespace WindowsFormsApp1
                 }
                 return;
             }
-/*            else if (!NeedDamage2Enabled && NeedDamage2 != -1)
-            {
-                if (lastdamage1 > 0 && lastdamage2 < damageTest2 && damageTest2 != -1)
-                {
-                    int turnind = NeedDamage2 & 0xfff;
-                    int actionid = (NeedDamage2 >> 12) & 0xf;
-                    UpdateDamage(turnind, actionid, damageTest2);
-                }
-            }*/
+            /*            else if (!NeedDamage2Enabled && NeedDamage2 != -1)
+                        {
+                            if (lastdamage1 > 0 && lastdamage2 < damageTest2 && damageTest2 != -1)
+                            {
+                                int turnind = NeedDamage2 & 0xfff;
+                                int actionid = (NeedDamage2 >> 12) & 0xf;
+                                UpdateDamage(turnind, actionid, damageTest2);
+                            }
+                        }*/
 
             if (lastHit1 == "sukara.png")
             {
@@ -343,7 +344,7 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
                 ActionTaken = true;
             }
-            if(lastHit1 == "hadou.png")
+            if (lastHit1 == "hadou.png")
             {
                 action = BattleAction.DISRUPTIVE_WAVE;
                 NeedDamage1 = -1;
@@ -375,7 +376,7 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if (lastHit1 == "erugio.png"&&lastHit2 == "attack.png")
+            if (lastHit1 == "erugio.png" && lastHit2 == "attack.png")
             {
                 maybeCritical = (ActionIndex << 12) | TurnIndex;
                 action = BattleAction.ATTACK_ENEMY;
@@ -383,7 +384,7 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
             }
 
-            if(lastHit1 == "samidare.png"||lastHit1 == "samidare2.png")
+            if (lastHit1 == "samidare.png" || lastHit1 == "samidare2.png")
             {
                 action = BattleAction.MULTITHRUST;
                 NeedDamage2 = (ActionIndex << 12) | TurnIndex;
@@ -398,48 +399,49 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
             }
 
-            if(lastHit1 == "tameru.png")
+            if (lastHit1 == "tameru.png")
             {
                 action = BattleAction.PSYCHE_UP;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
             }
 
-            if(lastHit1 == "zigosupa.png")
+            if (lastHit1 == "zigosupa.png")
             {
                 action = BattleAction.LIGHTNING_STORM;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
                 NeedDamage2 = -1;
             }
 
-            if(lastHit1 == "kuroi.png")
+            if (lastHit1 == "kuroi.png")
             {
                 action = BattleAction.DARK_BREATH;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
                 NeedDamage2 = -1;
             }
 
-            if(lastHit1 == "erugio.png" && lastHit2 == "uhsc.png")
+            if (lastHit1 == "erugio.png" && lastHit2 == "uhsc.png")
             {
                 action = BattleAction.ULTRA_HIGH_SPEED_COMBO;
                 NeedDamage2 = (ActionIndex << 12) | TurnIndex;
                 NeedDamage1 = -1;
             }
 
-            if(lastHit1 == "sutemi.png")
+            if (lastHit1 == "sutemi.png")
             {
                 action = BattleAction.DOUBLE_UP;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
                 ActionTaken = true;
             }
-            if(lastHit1 == "meisou.png")
+            if (lastHit1 == "meisou.png")
             {
                 action = BattleAction.MEDITATION;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
             }
-            if(lastHit1 == "madannte.png"){
+            if (lastHit1 == "madannte.png")
+            {
                 action = BattleAction.MAGIC_BURST;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
                 NeedDamage2 = -1;
@@ -450,14 +452,14 @@ namespace WindowsFormsApp1
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
                 NeedDamage2 = -1;
             }
-            if(lastHit1 == "fullheal.png")
+            if (lastHit1 == "fullheal.png")
             {
                 action = BattleAction.FULLHEAL;
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
                 ActionTaken = true;
             }
-            if(lastHit1 == "more_heal.png")
+            if (lastHit1 == "more_heal.png")
             {
                 action = BattleAction.MORE_HEAL;
                 NeedDamage1 = -1;
@@ -465,7 +467,7 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if (lastHit1 == "defense_champion.png" &&lastHit2 == "defense_champion2.png")
+            if (lastHit1 == "defense_champion.png" && lastHit2 == "defense_champion2.png")
             {
                 action = BattleAction.DEFENDING_CHAMPION;
                 NeedDamage1 = -1;
@@ -473,7 +475,7 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if(lastHit1 == "ayasii.png")
+            if (lastHit1 == "ayasii.png")
             {
                 action = BattleAction.LULLAB_EYE;
                 NeedDamage1 = -1;
@@ -508,7 +510,7 @@ namespace WindowsFormsApp1
                 slept = true;
             }
 
-            if(!slept && lastHit1 == "Paralysis.png" && lastHit3 == "CareParalysis.png")
+            if (!slept && lastHit1 == "Paralysis.png" && lastHit3 == "CareParalysis.png")
             {
                 action = BattleAction.CURE_PARALYSIS;
                 NeedDamage1 = -1;
@@ -525,7 +527,7 @@ namespace WindowsFormsApp1
                 slept = true;
             }
 
-            if(!slept && lastHit1 == "sleeping2.png"&&lastHit2 == "" && lastHit3 == "")
+            if (!slept && lastHit1 == "sleeping2.png" && lastHit2 == "" && lastHit3 == "")
             {
                 action = BattleAction.SLEEPING;
                 NeedDamage1 = -1;
@@ -535,7 +537,7 @@ namespace WindowsFormsApp1
                 slept = true;
             }
 
-            if (!ActionTaken && lastHit1 == "sleeping2.png" && ( lastHit3 == "dead.png" || lastHit3 == "dead2.png"))
+            if (!ActionTaken && lastHit1 == "sleeping2.png" && (lastHit3 == "dead.png" || lastHit3 == "dead2.png"))
             {
                 action = BattleAction.DEAD;
                 NeedDamage1 = -1;
@@ -543,7 +545,7 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if(lastHit1 == "song.png")
+            if (lastHit1 == "song.png")
             {
                 action = BattleAction.SONG;
                 NeedDamage1 = -1;
@@ -551,7 +553,7 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if(lastHit1 == "sippuu.png")
+            if (lastHit1 == "sippuu.png")
             {
                 action = BattleAction.MERCURIAL_THRUST;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
@@ -559,14 +561,14 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if(lastHit1 == "ano.png")
+            if (lastHit1 == "ano.png")
             {
                 preAction = -1;
                 ActionTaken = true;
                 slept = false;
             }
 
-            if(lastHit1 == "sage.png")
+            if (lastHit1 == "sage.png")
             {
                 action = BattleAction.SAGE_ELIXIR;
                 NeedDamage1 = -1;
@@ -574,7 +576,7 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if(lastHit1 == "elven.png")
+            if (lastHit1 == "elven.png")
             {
                 action = BattleAction.ELFIN_ELIXIR;
                 NeedDamage1 = -1;
@@ -582,7 +584,7 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if(lastHit1 == "flee.png")
+            if (lastHit1 == "flee.png")
             {
                 action = BattleAction.FLEE;
                 NeedDamage1 = -1;
@@ -590,7 +592,7 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if(!ActionTaken && lastHit3 == "a_attack.png" && lastHit2 != "uhsc.png" && lastHit1 != "guard.png")
+            if (!ActionTaken && lastHit3 == "a_attack.png" && lastHit2 != "uhsc.png" && lastHit1 != "guard.png")
             {
                 action = BattleAction.ATTACK_ALLY;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
@@ -598,7 +600,7 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
-            if (action != -1&&action != preAction && (lastHit1 != "" || lastHit2 != "" || lastHit3 != ""))
+            if (action != -1 && action != preAction && (lastHit1 != "" || lastHit2 != "" || lastHit3 != ""))
             {
                 NeedDamage1Enabled = NeedDamage1 != -1;
                 NeedDamage2Enabled = NeedDamage2 != -1;
@@ -611,7 +613,7 @@ namespace WindowsFormsApp1
                 }
                 preAction = action;
                 RecordAction(TurnIndex, action);
-                if (NeedDamage1 == -1&&NeedDamage2 == -1)
+                if (NeedDamage1 == -1 && NeedDamage2 == -1)
                 {
                     UpdateDamage(TurnIndex, ActionIndex, 0);
                 }
@@ -627,7 +629,7 @@ namespace WindowsFormsApp1
                     ActionTaken = false;
                 }
             }
-            else if(action != -1 && action == preAction)
+            else if (action != -1 && action == preAction)
             {
                 LastDetection = DateTime.Now;
                 if (ActionIndex == 0)
@@ -660,8 +662,8 @@ namespace WindowsFormsApp1
             {
                 slept = false;
             }
-            
-           
+
+
 
             return;
         }
@@ -888,7 +890,7 @@ namespace WindowsFormsApp1
                 _ConsoleWindow.UpdateCurrentTurn(DisplayTurnIndex);
             }
         }
-        
+
         private void LoadTemplatesToCache()
         {
             // resourceフォルダ内のテンプレート画像をキャッシュに読み込む
@@ -902,7 +904,7 @@ namespace WindowsFormsApp1
                 {
                     Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
                     templateCache.Add(templateFile, template);
-                    
+
                 }
             }
 
@@ -996,7 +998,8 @@ namespace WindowsFormsApp1
         private async Task onTimeReadComplete(string timer)
         {
             var text = NormalizeTime(timer);
-            if (text != "") {
+            if (text != "")
+            {
                 InputTimer.Text = text;
             }
             await Task.CompletedTask;
@@ -1048,18 +1051,21 @@ namespace WindowsFormsApp1
                 {
                     // 複数領域を条件に基づいて処理する
                     ProcessCaptureAreas(frame);
-                    using (Mat resizedFrame1 = new Mat(frame, new Rectangle(0, 0, 958, 718)))
+                    if (!TableOnlyVisible.Checked)
                     {
-                        using (Mat resizedFrame2 = new Mat())
+                        using (Mat resizedFrame1 = new Mat(frame, new Rectangle(0, 0, 958, 718)))
                         {
-                            CvInvoke.Resize(resizedFrame1, resizedFrame2, new Size(958 / 4, 718 / 4)); // フレームをリサイズ
-
-                            if (pictureBox1.Image != null)
+                            using (Mat resizedFrame2 = new Mat())
                             {
-                                pictureBox1.Image.Dispose();
+                                CvInvoke.Resize(resizedFrame1, resizedFrame2, new Size(958 / 4, 718 / 4)); // フレームをリサイズ
+
+                                if (pictureBox1.Image != null)
+                                {
+                                    pictureBox1.Image.Dispose();
+                                }
+                                // フレームの更新（ミラー用に再描画）
+                                pictureBox1.Image = resizedFrame2.ToBitmap();
                             }
-                            // フレームの更新（ミラー用に再描画）
-                            pictureBox1.Image = resizedFrame2.ToBitmap();
                         }
                     }
                 }
@@ -1143,7 +1149,7 @@ namespace WindowsFormsApp1
 
             foreach (var area in ocr2)
             {
-               DrawCaptureArea(frame, area);
+                DrawCaptureArea(frame, area);
             }
         }
 
@@ -1170,7 +1176,7 @@ namespace WindowsFormsApp1
 
             using (Mat Tmp = result.Mat)
             {
-               
+
                 using (Mat trimmed = TrimFirstPixel(Tmp, 40, 60))
                 {
                     if (trimmed.Width == 40 && trimmed.Height == 60)
@@ -1238,7 +1244,8 @@ namespace WindowsFormsApp1
             Image<Bgr, Byte> result = img.CopyBlank();
             result.SetValue(new Bgr(255, 255, 255), mask);
 
-            using (Mat Tmp = result.Mat) {
+            using (Mat Tmp = result.Mat)
+            {
                 using (Mat trimmed = TrimFirstPixel(Tmp, 130, 45))
                 {
                     if (trimmed.Width == 130 && trimmed.Height == 45)
@@ -1290,7 +1297,7 @@ namespace WindowsFormsApp1
                         }
 
                     }
-  
+
                 }
             }
 
@@ -1388,7 +1395,8 @@ namespace WindowsFormsApp1
         }
 
         //呼びだす際はusing使う事。使わないとメモリリークする
-        private Mat TrimFirstPixel(Mat resultMat1, int xSize, int ySize) {
+        private Mat TrimFirstPixel(Mat resultMat1, int xSize, int ySize)
+        {
             // 最初の白ピクセルを探索
             Rectangle firstWhitePixel = new Rectangle(0, 0, 0, 0); // 初期値として無効な位置を設定
             bool found = false, found1 = false;
@@ -1478,7 +1486,7 @@ namespace WindowsFormsApp1
 
             // マスクを作成 (範囲内のピクセルが白、それ以外が黒)
             Image<Gray, Byte> mask = img.InRange(lowerBound, upperBound);
-            
+
             // マスクを適用して白黒画像を作成
             Image<Bgr, Byte> result = img.CopyBlank();
             result.SetValue(new Bgr(255, 255, 255), mask);
@@ -1487,11 +1495,11 @@ namespace WindowsFormsApp1
             {
                 using (Mat trimmed = TrimFirstPixel(resultMat1, 100, 45))
                 {
-                     //SaveMatAsImage(trimmed, 2);
+                    //SaveMatAsImage(trimmed, 2);
 
                     if (trimmed.Width == 100 && trimmed.Height == 45)
                     {
-                        
+
                         foreach (var entry in templateCache2)
                         {
                             string templateFile = entry.Key;
@@ -1549,7 +1557,7 @@ namespace WindowsFormsApp1
                 // Matに変換
                 using (Mat resultMat1 = result.Mat)
                 {
-                    
+
                     using (Mat trimmed = TrimFirstPixel(resultMat1, 26, 40))
                     {
                         if (trimmed.Width == 26 && trimmed.Height == 40)
@@ -1749,10 +1757,11 @@ namespace WindowsFormsApp1
         private const int TableOnlyVisibleBit = 1 << 1; // 2
         private const int ShowDebugBit = 1 << 2;      // 4
         private const int OutputVisibleBit = 1 << 3;   // 8
+        private const int AutoLiveSplitEnabledBit = 1 << 4;   // 8
                                                        // 設定ファイルからウィンドウサイズと設定を読み込み
         private const int MinWidth = 300;
         private const int MinHeight = 200;
-        private const int MaxSizeBits = 0x3FFF; // サイズ情報のビット幅
+        private const int MaxSizeBits = 0x1FFF; // サイズ情報のビット幅
 
         // 設定ファイルにウィンドウサイズと設定を保存
         private void SaveSettings()
@@ -1764,6 +1773,7 @@ namespace WindowsFormsApp1
             if (TableOnlyVisible.Checked) settings |= TableOnlyVisibleBit;
             if (showDebugCheckBox.Checked) settings |= ShowDebugBit;
             if (OutputVisible.Checked) settings |= OutputVisibleBit;
+            if (AutoLiveSplitEnabled.Checked) settings |= AutoLiveSplitEnabledBit;
             // ウィンドウサイズをビットにエンコード
 
             int width = this.Width < MinWidth ? MinWidth : this.Width;
@@ -1773,11 +1783,11 @@ namespace WindowsFormsApp1
                 width = 623;
                 height = 432;
             }
-           
-            int encodedSize = ((width & MaxSizeBits) << 14) | (height & MaxSizeBits);
+
+            int encodedSize = ((width & MaxSizeBits) << 13) | (height & MaxSizeBits);
 
             // 設定とサイズを1つの整数にまとめて保存
-            int combinedSettings = (settings & 0xF) | (encodedSize << 4); // 上位にサイズ情報
+            int combinedSettings = (settings & 0xFF) | (encodedSize << 5); // 上位にサイズ情報
 
             File.WriteAllText(ConfigFileName, combinedSettings.ToString());
         }
@@ -1790,15 +1800,16 @@ namespace WindowsFormsApp1
                 if (int.TryParse(fileContent, out int combinedSettings))
                 {
                     // チェックボックスの設定
-                    int settings = combinedSettings & 0xF;
+                    int settings = combinedSettings & 0xFF;
                     TimeVisible.Checked = (settings & TimeVisibleBit) != 0;
                     TableOnlyVisible.Checked = (settings & TableOnlyVisibleBit) != 0;
                     showDebugCheckBox.Checked = (settings & ShowDebugBit) != 0;
                     OutputVisible.Checked = (settings & OutputVisibleBit) != 0;
+                    AutoLiveSplitEnabled.Checked = (settings & AutoLiveSplitEnabledBit) != 0;
 
                     // ウィンドウサイズの読み込み
-                    int encodedSize = (combinedSettings >> 4);
-                    int width = (encodedSize >> 14) & MaxSizeBits;
+                    int encodedSize = (combinedSettings >> 5);
+                    int width = (encodedSize >> 13) & MaxSizeBits;
                     int height = encodedSize & MaxSizeBits;
                     this.Width = width < MinWidth ? MinWidth : width;
                     this.Height = height < MinHeight ? MinHeight : height;
@@ -1854,6 +1865,11 @@ namespace WindowsFormsApp1
                 _ConsoleWindow.Close();
                 _ConsoleWindow.Dispose();
             }
+        }
+
+        private void checkBox1_CheckedChanged_2(object sender, EventArgs e)
+        {
+            ReloadState();
         }
     }
 }

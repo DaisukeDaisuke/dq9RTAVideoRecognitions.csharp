@@ -42,6 +42,7 @@
             TableOnlyVisible = new System.Windows.Forms.CheckBox();
             TimeVisible = new System.Windows.Forms.CheckBox();
             ConsoleButton = new System.Windows.Forms.Button();
+            AutoLiveSplitEnabled = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             SuspendLayout();
@@ -49,7 +50,7 @@
             // pictureBox1
             // 
             pictureBox1.Location = new System.Drawing.Point(14, 15);
-            pictureBox1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new System.Drawing.Size(280, 225);
             pictureBox1.TabIndex = 0;
@@ -64,7 +65,7 @@
             dataGridView1.AllowUserToResizeRows = false;
             dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Location = new System.Drawing.Point(14, 248);
-            dataGridView1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            dataGridView1.Margin = new System.Windows.Forms.Padding(4);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.ReadOnly = true;
             dataGridView1.RowTemplate.Height = 21;
@@ -76,7 +77,7 @@
             // 
             outputTextBox.BackColor = System.Drawing.SystemColors.ControlLightLight;
             outputTextBox.Location = new System.Drawing.Point(438, 42);
-            outputTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            outputTextBox.Margin = new System.Windows.Forms.Padding(4);
             outputTextBox.Multiline = true;
             outputTextBox.Name = "outputTextBox";
             outputTextBox.ReadOnly = true;
@@ -86,7 +87,7 @@
             // copyButton
             // 
             copyButton.Location = new System.Drawing.Point(344, 61);
-            copyButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            copyButton.Margin = new System.Windows.Forms.Padding(4);
             copyButton.Name = "copyButton";
             copyButton.Size = new System.Drawing.Size(88, 40);
             copyButton.TabIndex = 14;
@@ -109,7 +110,7 @@
             // 
             InputTimer.BackColor = System.Drawing.SystemColors.ControlLightLight;
             InputTimer.Location = new System.Drawing.Point(299, 30);
-            InputTimer.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            InputTimer.Margin = new System.Windows.Forms.Padding(4);
             InputTimer.Name = "InputTimer";
             InputTimer.Size = new System.Drawing.Size(131, 23);
             InputTimer.TabIndex = 16;
@@ -129,7 +130,7 @@
             // 
             DebugTextBox.BackColor = System.Drawing.SystemColors.ControlLightLight;
             DebugTextBox.Location = new System.Drawing.Point(440, 145);
-            DebugTextBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            DebugTextBox.Margin = new System.Windows.Forms.Padding(4);
             DebugTextBox.Multiline = true;
             DebugTextBox.Name = "DebugTextBox";
             DebugTextBox.ReadOnly = true;
@@ -151,7 +152,7 @@
             // 
             showDebugCheckBox.AutoSize = true;
             showDebugCheckBox.Location = new System.Drawing.Point(301, 221);
-            showDebugCheckBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            showDebugCheckBox.Margin = new System.Windows.Forms.Padding(4);
             showDebugCheckBox.Name = "showDebugCheckBox";
             showDebugCheckBox.Size = new System.Drawing.Size(95, 19);
             showDebugCheckBox.TabIndex = 20;
@@ -163,7 +164,7 @@
             // 
             OutputVisible.AutoSize = true;
             OutputVisible.Location = new System.Drawing.Point(302, 166);
-            OutputVisible.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            OutputVisible.Margin = new System.Windows.Forms.Padding(4);
             OutputVisible.Name = "OutputVisible";
             OutputVisible.Size = new System.Drawing.Size(98, 19);
             OutputVisible.TabIndex = 21;
@@ -175,7 +176,7 @@
             // 
             TableOnlyVisible.AutoSize = true;
             TableOnlyVisible.Location = new System.Drawing.Point(491, 14);
-            TableOnlyVisible.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            TableOnlyVisible.Margin = new System.Windows.Forms.Padding(4);
             TableOnlyVisible.Name = "TableOnlyVisible";
             TableOnlyVisible.Size = new System.Drawing.Size(78, 19);
             TableOnlyVisible.TabIndex = 22;
@@ -187,7 +188,7 @@
             // 
             TimeVisible.AutoSize = true;
             TimeVisible.Location = new System.Drawing.Point(301, 193);
-            TimeVisible.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            TimeVisible.Margin = new System.Windows.Forms.Padding(4);
             TimeVisible.Name = "TimeVisible";
             TimeVisible.Size = new System.Drawing.Size(85, 19);
             TimeVisible.TabIndex = 23;
@@ -198,7 +199,7 @@
             // ConsoleButton
             // 
             ConsoleButton.Location = new System.Drawing.Point(344, 110);
-            ConsoleButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            ConsoleButton.Margin = new System.Windows.Forms.Padding(4);
             ConsoleButton.Name = "ConsoleButton";
             ConsoleButton.Size = new System.Drawing.Size(88, 48);
             ConsoleButton.TabIndex = 24;
@@ -206,11 +207,25 @@
             ConsoleButton.UseVisualStyleBackColor = true;
             ConsoleButton.Click += button1_Click;
             // 
+            // AutoLiveSplitEnabled
+            // 
+            AutoLiveSplitEnabled.AutoSize = true;
+            AutoLiveSplitEnabled.Checked = true;
+            AutoLiveSplitEnabled.CheckState = System.Windows.Forms.CheckState.Checked;
+            AutoLiveSplitEnabled.Location = new System.Drawing.Point(576, 14);
+            AutoLiveSplitEnabled.Name = "AutoLiveSplitEnabled";
+            AutoLiveSplitEnabled.Size = new System.Drawing.Size(96, 19);
+            AutoLiveSplitEnabled.TabIndex = 25;
+            AutoLiveSplitEnabled.Text = "AutoLiveSplit";
+            AutoLiveSplitEnabled.UseVisualStyleBackColor = true;
+            AutoLiveSplitEnabled.CheckedChanged += checkBox1_CheckedChanged_2;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(716, 491);
+            Controls.Add(AutoLiveSplitEnabled);
             Controls.Add(ConsoleButton);
             Controls.Add(TimeVisible);
             Controls.Add(TableOnlyVisible);
@@ -225,7 +240,7 @@
             Controls.Add(outputTextBox);
             Controls.Add(dataGridView1);
             Controls.Add(pictureBox1);
-            Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            Margin = new System.Windows.Forms.Padding(4);
             Name = "Form1";
             Text = "Form1";
             FormClosing += Form1_FormClosing;
@@ -252,6 +267,7 @@
         private System.Windows.Forms.CheckBox TableOnlyVisible;
         private System.Windows.Forms.CheckBox TimeVisible;
         private System.Windows.Forms.Button ConsoleButton;
+        private System.Windows.Forms.CheckBox AutoLiveSplitEnabled;
     }
 }
 
