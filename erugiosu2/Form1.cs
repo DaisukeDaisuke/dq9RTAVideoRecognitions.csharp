@@ -1137,19 +1137,22 @@ namespace WindowsFormsApp1
                 }
             }
 
-            foreach (var area in areas)
+            if (!TableOnlyVisible.Checked)
             {
-                DrawCaptureArea(frame, area);
-            }
+                foreach (var area in areas)
+                {
+                    DrawCaptureArea(frame, area);
+                }
 
-            foreach (var area in ocr)
-            {
-                DrawCaptureArea(frame, area);
-            }
+                foreach (var area in ocr)
+                {
+                    DrawCaptureArea(frame, area);
+                }
 
-            foreach (var area in ocr2)
-            {
-                DrawCaptureArea(frame, area);
+                foreach (var area in ocr2)
+                {
+                    DrawCaptureArea(frame, area);
+                }
             }
         }
 
