@@ -13,7 +13,8 @@ using System.Diagnostics;
 using erugiosu2;
 using System.Threading.Tasks;
 using System.Text;
-using System.Drawing.Imaging;
+//Imagingはウイルス検知されるので使用しない
+//using System.Drawing.Imaging;
 namespace WindowsFormsApp1
 {
 
@@ -1400,7 +1401,7 @@ namespace WindowsFormsApp1
             using (Bitmap bmp = trimmed.ToBitmap())
             {
                 // 画像をPNG形式で保存
-                bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
+                //bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
             }
 #endif
         }
