@@ -114,6 +114,7 @@ namespace erugiosu2
         public const int DEAD = 51;
         public const int SONG = 52;
         public const int FLEE = 53;
+        public const int PSYCHE_UP_ALLY = 62;
 
 
         // 味方アクションかどうかを判定するダミー関数（実装は任意）
@@ -172,6 +173,8 @@ namespace erugiosu2
         { DEAD, "しんでしまった！" },
         { SONG, "ゴスペルソング" },
         { FLEE, "逃げる" },
+        { PSYCHE_UP_ALLY, "ためる(味方)" },
+        { SPECIAL_MEDICINE, "特薬草" },
     };
 
         private static readonly Dictionary<int, string> actionNames = new()
@@ -215,6 +218,8 @@ namespace erugiosu2
         { DEAD, "しんでしまった！" },
         { SONG, "ゴスペルソング" },
         { FLEE, "逃げる" },
+        { PSYCHE_UP_ALLY, "ためる(味方)" },
+        { SPECIAL_MEDICINE, "特薬草" },
     };
 
         public static string GetActionName(int actionId) =>

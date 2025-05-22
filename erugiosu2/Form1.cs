@@ -14,7 +14,7 @@ using erugiosu2;
 using System.Threading.Tasks;
 using System.Text;
 //Imagingはウイルス検知されるので使用しない
-//using System.Drawing.Imaging;
+using System.Drawing.Imaging;
 namespace WindowsFormsApp1
 {
 
@@ -27,6 +27,7 @@ namespace WindowsFormsApp1
         private Dictionary<string, Mat> NumberCache = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         private Dictionary<string, Mat> templateCache1 = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         private Dictionary<string, Mat> templateCache2 = new Dictionary<string, Mat>(); // テンプレートキャッシュ
+        private Dictionary<string, Mat> templateCache3 = new Dictionary<string, Mat>(); // テンプレートキャッシュ
         int[] matchResults1 = new int[3] { -1, -1, -1 };
         int[] matchResults2 = new int[3] { -1, -1, -1 };
 
@@ -35,6 +36,7 @@ namespace WindowsFormsApp1
         private string lastHit1 = "";
         private string lastHit2 = "";
         private string lastHit3 = "";
+        private string lastHit4 = "";
 
         private int preAction = -1;
         private bool Initialized = false;
@@ -51,8 +53,8 @@ namespace WindowsFormsApp1
         private bool slept = false;
         private DateTime LastDetection = DateTime.Now;
         // グローバルスコープで一致率の最も高い画像名と一致率を格納する変数を定義
-        double[] highestMatchPercentage = new double[3] { 0, 0, 0 };
-        string[] highestMatchImageNames = new string[3] { "", "", "" };
+        double[] highestMatchPercentage = new double[4] { 0, 0, 0, 0 };
+        string[] highestMatchImageNames = new string[4] { "", "", "", "" };
         double[] highestNumberMatchPercentage1 = new double[3] { 0, 0, 0 };
         double[] highestNumberMatchPercentage2 = new double[3] { 0, 0, 0 };
         private int marginX = 25;
@@ -162,7 +164,7 @@ namespace WindowsFormsApp1
 
                 dataGridView1.Rows[participantId].Cells[actionIndex * 2 + 2].Value = damage;
 
-                if (participantId >= 4 && actionIndex == 2 && !flag)
+                if (participantId >= 3 && actionIndex == 2 && !flag)
                 {
                     runSearch();
                 }
@@ -186,6 +188,7 @@ namespace WindowsFormsApp1
 
         private bool ActionTaken = false;
         private bool Sleeping = false;
+        private bool daibougilyo = false;
         private async void ProcessState()
         {
             if ((lastHit1 == "erugio.png" || lastHit1 == "erugio2.png" || lastHit1 == "erugio4.png") && lastHit2 == "reset.png")
@@ -214,6 +217,7 @@ namespace WindowsFormsApp1
                     preAction = -1;
                     maybeCritical = -1;
                     slept = false;
+                    daibougilyo = false;
                     DisplayTurnIndex = 0;
                     UpdateOutputText("");
                     _ConsoleWindow.ResetState();
@@ -403,9 +407,21 @@ namespace WindowsFormsApp1
 
             if (lastHit1 == "tameru.png")
             {
-                action = BattleAction.PSYCHE_UP;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
+                if (lastHit4 == "aha.png")
+                {
+                    if (!ActionTaken)
+                    {
+                        action = BattleAction.PSYCHE_UP_ALLY;
+                        NeedDamage1 = -1;
+                        NeedDamage2 = -1;
+                    }
+                }
+                else
+                {
+                    action = BattleAction.PSYCHE_UP;
+                    NeedDamage1 = -1;
+                    NeedDamage2 = -1;
+                }
             }
 
             if (lastHit1 == "zigosupa.png")
@@ -449,11 +465,16 @@ namespace WindowsFormsApp1
                 NeedDamage1 = -1;
                 NeedDamage2 = -1;
             }
+
+
             if (lastHit1 == "madannte.png")
             {
                 action = BattleAction.MAGIC_BURST;
                 NeedDamage1 = (ActionIndex << 12) | TurnIndex;
                 NeedDamage2 = -1;
+                if (!ActionTaken) {
+                    daibougilyo = true;
+                }
             }
             if (lastHit1 == "ice.png")
             {
@@ -475,15 +496,6 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
                 ActionTaken = true;
             }
-
-            if (lastHit1 == "defense_champion.png" && lastHit2 == "defense_champion2.png")
-            {
-                action = BattleAction.DEFENDING_CHAMPION;
-                NeedDamage1 = -1;
-                NeedDamage2 = -1;
-                ActionTaken = true;
-            }
-
             if (lastHit1 == "ayasii.png")
             {
                 action = BattleAction.LULLAB_EYE;
@@ -601,6 +613,15 @@ namespace WindowsFormsApp1
                 ActionTaken = true;
             }
 
+            if ((daibougilyo && lastHit1 == "sleeping2.png") || (lastHit1 == "defense_champion.png" && lastHit2 == "defense_champion2.png"))
+            {
+                action = BattleAction.DEFENDING_CHAMPION;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+                ActionTaken = true;
+                daibougilyo = false;
+            }
+
             if (!ActionTaken && lastHit3 == "a_attack.png" && lastHit2 != "uhsc.png" && lastHit1 != "guard.png")
             {
                 action = BattleAction.ATTACK_ALLY;
@@ -608,6 +629,14 @@ namespace WindowsFormsApp1
                 NeedDamage2 = -1;
                 ActionTaken = true;
             }
+            if(!ActionTaken && lastHit1 == "tokuyaku.png")
+            {
+                action = BattleAction.SPECIAL_MEDICINE;
+                NeedDamage1 = -1;
+                NeedDamage2 = -1;
+                ActionTaken = true;
+            }
+
 
             if (action != -1 && action != preAction && (lastHit1 != "" || lastHit2 != "" || lastHit3 != ""))
             {
@@ -636,6 +665,7 @@ namespace WindowsFormsApp1
                     ActionIndex = 0;
                     TurnIndex++;
                     ActionTaken = false;
+                    daibougilyo = false;
                 }
             }
             else if (action != -1 && action == preAction)
@@ -955,6 +985,19 @@ namespace WindowsFormsApp1
                     templateCache2.Add(templateFile, template);
                 }
             }
+
+            // resourceフォルダ内のテンプレート画像をキャッシュに読み込む
+            string resourceDir4 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resource", "target");
+            string[] templateFiles4 = Directory.GetFiles(resourceDir4, "*.png");
+
+            foreach (string templateFile in templateFiles4)
+            {
+                if (!templateCache3.ContainsKey(templateFile))
+                {
+                    Mat template = CvInvoke.Imread(templateFile, Emgu.CV.CvEnum.ImreadModes.Grayscale);
+                    templateCache3.Add(templateFile, template);
+                }
+            }
         }
 
         // ParseInputの出力をフォーマットして文字列として返す関数
@@ -1046,10 +1089,12 @@ namespace WindowsFormsApp1
             highestMatchImageNames[0] = "";
             highestMatchImageNames[1] = "";
             highestMatchImageNames[2] = "";
+            highestMatchImageNames[3] = "";
 
             highestMatchPercentage[0] = 0;
             highestMatchPercentage[1] = 0;
             highestMatchPercentage[2] = 0;
+            highestMatchPercentage[3] = 0;
 
 
             using (Mat frame = new Mat())
@@ -1080,11 +1125,11 @@ namespace WindowsFormsApp1
                 }
 
                 StringBuilder sb = new StringBuilder();
-                sb.Append("int1: ").Append(string.Join(", ", matchResults1)).Append(" " + Environment.NewLine);
+                sb.Append("int1: ").Append(string.Join(", ", matchResults1)).Append(", ");
                 sb.Append("int2: ").Append(string.Join(", ", matchResults2)).Append(" " + Environment.NewLine);
 
                 // tem1, tem2, tem3の部分を追加
-                for (int j = 0; j < 3; j++)
+                for (int j = 0; j < 4; j++)
                 {
                     string templateName = string.IsNullOrEmpty(highestMatchImageNames[j]) ? "null" : highestMatchImageNames[j];
                     double matchPercentage = highestMatchPercentage[j];
@@ -1118,6 +1163,11 @@ namespace WindowsFormsApp1
             // 他の条件に基づく領域もここに追加
         };
 
+            Rectangle[] ocr3 = {
+            new Rectangle(78, 578, 140, 65),  // 1つ目の領域
+            // 他の条件に基づく領域もここに追加
+        };
+
 
             foreach (var area in areas)
             {
@@ -1146,6 +1196,15 @@ namespace WindowsFormsApp1
                 }
             }
 
+            foreach (var area in ocr3)
+            {
+                //// この領域に対する画像処理
+                using (Mat cropped = new Mat(frame, area))
+                {
+                    ProcessCroppedImage3(cropped);
+                }
+            }
+
             if (!TableOnlyVisible.Checked)
             {
                 foreach (var area in areas)
@@ -1159,6 +1218,10 @@ namespace WindowsFormsApp1
                 }
 
                 foreach (var area in ocr2)
+                {
+                    DrawCaptureArea(frame, area);
+                }
+                foreach (var area in ocr3)
                 {
                     DrawCaptureArea(frame, area);
                 }
@@ -1230,6 +1293,77 @@ namespace WindowsFormsApp1
                         if (frameCounter % 2 == 0)
                         {
                             //SaveMatAsImage(trimmed, 2);
+                            //pictureBox4.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
+                        }
+                    }
+                }
+            }
+
+            img.Dispose();
+            mask.Dispose();
+            result.Dispose();
+        }
+
+
+        private void ProcessCroppedImage3(Mat cropped)
+        {
+            Image<Bgr, Byte> img = cropped.ToImage<Bgr, Byte>();
+
+            // RGBの下限と上限を設定
+            var lowerBound = new Bgr(140, 140, 140); // RGBそれぞれ200以上
+            var upperBound = new Bgr(255, 255, 255); // 白の範囲
+
+            // マスクを作成 (範囲内のピクセルが白、それ以外が黒)
+            Image<Gray, Byte> mask = img.InRange(lowerBound, upperBound);
+
+            // マスクを適用して白黒画像を作成
+            Image<Bgr, Byte> result = img.CopyBlank();
+            result.SetValue(new Bgr(255, 255, 255), mask);
+
+            using (Mat Tmp = result.Mat)
+            {
+
+                using (Mat trimmed = TrimFirstPixel(Tmp, 130, 45))
+                {
+                    if (trimmed.Width == 130 && trimmed.Height == 45)
+                    {
+                        foreach (var entry in templateCache3)
+                        {
+                            string templateFile = entry.Key;
+                            Mat template = entry.Value;
+
+                            using (Mat resultMat = new Mat())
+                            {
+                                // テンプレートマッチングを実行
+                                CvInvoke.MatchTemplate(trimmed, template, resultMat, Emgu.CV.CvEnum.TemplateMatchingType.CcorrNormed);
+
+                                // 一致率を計算
+                                double minVal = 0, maxVal = 0;
+                                Point minLoc = new Point(), maxLoc = new Point();
+                                CvInvoke.MinMaxLoc(resultMat, ref minVal, ref maxVal, ref minLoc, ref maxLoc);
+
+                                // 一致率をパーセンテージに変換
+                                double matchPercentage = maxVal * 100.0;
+
+
+                                // 現在の一致率がこれまでの最高値を超える場合のみ更新
+                                if (matchPercentage > highestMatchPercentage[3])
+                                {
+                                    highestMatchPercentage[3] = matchPercentage;
+                                    highestMatchImageNames[3] = Path.GetFileName(templateFile); // 画像名を保存
+
+                                    if (matchPercentage >= 65)
+                                    {
+                                        Console.WriteLine($"3Matched with {Path.GetFileName(templateFile)}: {matchPercentage}%");
+                                        lastHit4 = Path.GetFileName(templateFile);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (frameCounter % 2 == 0)
+                        {
+                            SaveMatAsImage(trimmed, 2);
                             //pictureBox4.Image.Save($"C:\\Users\\Owner\\Downloads\\imp\\{frameCounter}.png", System.Drawing.Imaging.ImageFormat.Png);
                         }
                     }
@@ -1401,7 +1535,7 @@ namespace WindowsFormsApp1
             using (Bitmap bmp = trimmed.ToBitmap())
             {
                 // 画像をPNG形式で保存
-                //bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
+                bmp.Save($"D:\\csharp\\imp\\{ frameCounter}_{i}.png", ImageFormat.Png);
             }
 #endif
         }
@@ -1504,6 +1638,7 @@ namespace WindowsFormsApp1
         private void ProcessCroppedImage1(Mat cropped)
         {
             lastHit3 = "";
+            lastHit4 = "";
             Image<Bgr, Byte> img = cropped.ToImage<Bgr, Byte>();
 
             // RGBの下限と上限を設定
