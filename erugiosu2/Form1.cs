@@ -414,6 +414,7 @@ namespace WindowsFormsApp1
                         action = BattleAction.PSYCHE_UP_ALLY;
                         NeedDamage1 = -1;
                         NeedDamage2 = -1;
+                        ActionTaken = true;
                     }
                 }
                 else
