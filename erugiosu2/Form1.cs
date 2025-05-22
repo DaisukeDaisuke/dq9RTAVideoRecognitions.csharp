@@ -937,7 +937,6 @@ namespace WindowsFormsApp1
             string resourceDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "resource", "message_v2");
             string[] templateFiles = Directory.GetFiles(resourceDir, "*.png");
 
-            int counter = 1;
             foreach (string templateFile in templateFiles)
             {
                 if (!templateCache.ContainsKey(templateFile))
