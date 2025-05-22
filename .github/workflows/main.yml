@@ -20,6 +20,7 @@ jobs:
           repository: 'DaisukeDaisuke/dq9BattleEmulatorCollection.cpp'
           ref: 'erugiosu'
           path: 'dq9BattleEmulatorCollection'
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
       - uses: actions/checkout@v4
         with:
           path: 'dq9RTAVideoRecognitions'
