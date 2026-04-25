@@ -2,6 +2,10 @@
 
 ![image](https://github.com/user-attachments/assets/ce1f0ac6-930f-43d2-92c3-97c19ec01af3)
 
+> [!WARNING]
+> **Archived**  
+> This repository is no longer in use as it is [scheduled to be ported to web browsers](https://github.com/DQIX/BattleEmulator/pull/10).  
+
 
 ## このプログラムについて  
 このc#製プログラムは、dq9のエルギオスバトルエミュレータのフロントエンドプログラムであり、偽トロからobs経由で入力された映像の映像認識を行います。   
